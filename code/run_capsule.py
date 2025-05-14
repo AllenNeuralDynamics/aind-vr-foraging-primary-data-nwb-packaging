@@ -141,7 +141,7 @@ if __name__ == "__main__":
             nwb_file.add_acquisition(table)
 
     meanings_table = MeaningsTable(
-        name="event_descriptions", description="Describes event meaning"
+        name="event_descriptions", description="Describes meaning of event and the corresponding data"
     )
     events_table = EventsTable(
         name="events",
