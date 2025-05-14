@@ -1,5 +1,6 @@
 import json
 import logging
+from enum import Enum
 from pathlib import Path
 
 import numpy as np
@@ -12,6 +13,7 @@ DATA_PATH = Path("/data")
 RESULTS_PATH = Path("/results")
 
 logger = logging.getLogger(__name__)
+
 
 class table_group(NWBDataInterface):
     """Custom data interface to group multiple tables."""
@@ -34,20 +36,24 @@ class table_group(NWBDataInterface):
     def to_dict(self):
         """Override to_dict to serialize the GroupedDynamicTable and its tables."""
         data = super().to_dict()  # Serialize the base data first
-        data['description'] = self.description
+        data["description"] = self.description
         # Serialize grouped tables
-        data['grouped_tables'] = {name: table.to_dict() for name, table in self.data.items()}
+        data["grouped_tables"] = {
+            name: table.to_dict() for name, table in self.data.items()
+        }
         return data
 
     @classmethod
     def from_dict(cls, data):
         """Override from_dict to deserialize the GroupedDynamicTable and its tables."""
         instance = super().from_dict(data)
-        instance.description = data['description']
+        instance.description = data["description"]
         instance.grouped_tables = {
-            name: DynamicTable.from_dict(table_data) for name, table_data in data['grouped_tables'].items()
+            name: DynamicTable.from_dict(table_data)
+            for name, table_data in data["grouped_tables"].items()
         }
         return instance
+
 
 class custom_data_interface(NWBDataInterface):
     """A custom data interface that can store a dictionary as attributes."""
@@ -154,7 +160,9 @@ def get_harp_nwb_streams(
                 stream.description,
             )
         except ValueError as e:
-            logger.info(f"Failed to get {stream.name} from {stream.parent} with error {e}")
+            logger.info(
+                f"Failed to get {stream.name} from {stream.parent} with error {e}"
+            )
 
     return timeseries_groups
 
@@ -181,21 +189,24 @@ def get_software_events_nwb_streams(
     """
     key = stream.parent.name
 
-    if stream.description is None:
-        description = stream.parent.description
-    else:
-        description = stream.description
     try:
         data = stream.data.reset_index()
         for column in data.columns:
+            # convert to nwb allowable types
             data[column].replace({None: np.nan}, inplace=True)
+            data[column] = data[column].apply(
+                lambda x: x.value if isinstance(x, Enum) else x
+            )
+            data[column] = data[column].apply(
+                lambda x: json.dumps(x) if isinstance(x, dict) else x
+            )
 
-        data['timestamp_source'] = data['timestamp_source'].apply(lambda x: x.value)
-        data['data_type'] = data['data_type'].apply(lambda x: x.value)
+        # data['timestamp_source'] = data['timestamp_source'].apply(lambda x: x.value)
+        # data['data_type'] = data['data_type'].apply(lambda x: x.value)
         # Convert dicts to JSON strings
-        data['data'] = data['data'].apply(lambda x: json.dumps(x) if isinstance(x, dict) else x)
+        # data['data'] = data['data'].apply(lambda x: json.dumps(x) if isinstance(x, dict) else x)
         event_groups = add_table_to_group(
-            event_groups, data, key, stream.name, description
+            event_groups, data, key, stream.name, stream.description
         )
     except (ValueError, FileNotFoundError) as e:
         logger.info(f"Failed to get {stream.name} from {stream.parent} with error {e}")
