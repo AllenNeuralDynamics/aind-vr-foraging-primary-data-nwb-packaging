@@ -1,5 +1,8 @@
+import json
+import logging
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pynwb
 from aind_behavior_core_analysis._core import DataStream
@@ -8,6 +11,7 @@ from pynwb.file import DynamicTable, NWBDataInterface
 DATA_PATH = Path("/data")
 RESULTS_PATH = Path("/results")
 
+logger = logging.getLogger(__name__)
 
 class table_group(NWBDataInterface):
     """Custom data interface to group multiple tables."""
@@ -136,7 +140,7 @@ def get_harp_nwb_streams(
                 description,
             )
         except (ValueError, FileNotFoundError) as e:
-            print(
+            logger.info(
                 f"Failed to get {stream.name} from {stream.parent} - {stream.parent.parent.name} with error {e}"
             )
     else:
@@ -150,7 +154,7 @@ def get_harp_nwb_streams(
                 stream.description,
             )
         except ValueError as e:
-            print(f"Failed to get {stream.name} from {stream.parent} with error {e}")
+            logger.info(f"Failed to get {stream.name} from {stream.parent} with error {e}")
 
     return timeseries_groups
 
@@ -183,11 +187,17 @@ def get_software_events_nwb_streams(
         description = stream.description
     try:
         data = stream.data.reset_index()
-        data['timestamp_source'] = data['timestamp_source'].astype(str)
+        for column in data.columns:
+            data[column].replace({None: np.nan}, inplace=True)
+
+        data['timestamp_source'] = data['timestamp_source'].apply(lambda x: x.value)
+        data['data_type'] = data['data_type'].apply(lambda x: x.value)
+        # Convert dicts to JSON strings
+        data['data'] = data['data'].apply(lambda x: json.dumps(x) if isinstance(x, dict) else x)
         event_groups = add_table_to_group(
             event_groups, data, key, stream.name, description
         )
     except (ValueError, FileNotFoundError) as e:
-        print(f"Failed to get {stream.name} from {stream.parent} with error {e}")
+        logger.info(f"Failed to get {stream.name} from {stream.parent} with error {e}")
 
     return event_groups

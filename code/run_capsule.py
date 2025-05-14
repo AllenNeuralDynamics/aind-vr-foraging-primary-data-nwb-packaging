@@ -109,11 +109,13 @@ if __name__ == "__main__":
                 )
         elif isinstance(stream, data_contract.PydanticModel):
             data = stream.data.model_dump()
+            """
             if "name" in data:  # conflicting key with nwb, have to remove
                 del data["name"]
 
             #custom_data = utils.custom_data_interface(name=stream.name, data=data)
             #custom_data.add_data()
+            """
             for key in data:
                 if isinstance(data[key], datetime):
                     data[key] = data[key].isoformat()
@@ -127,7 +129,6 @@ if __name__ == "__main__":
         for key, table in table_group.data.items():
             nwb_file.add_acquisition(table)
 
-    """
     meanings_table = MeaningsTable(
         name="event_descriptions", description="Describes event meaning"
     )
@@ -147,7 +148,7 @@ if __name__ == "__main__":
             add_event(events_table, meanings_table, data)
 
     nwb_file.add_events_table(events_table)
-    """
+    
     with NWBZarrIO(
         (
             utils.RESULTS_PATH / f"{data_description_json['name']}_primary_nwb"
