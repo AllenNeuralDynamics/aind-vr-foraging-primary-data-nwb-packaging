@@ -6,6 +6,7 @@ The output of this packaging is an nwb file with data in the `acquisition` and `
 
 ```
 from hdmf_zarr import NWBZarrIO
+import json
 
 # REPLACE WITH PATH TO NWB
 with NWBZarrIO('path/to/nwb', 'r') as io:
@@ -16,6 +17,9 @@ keys = list(nwb.acquisition.keys())
 data = nwb.acquisition[keys[0]]
 print(data)
 data_df = data[:] # gives a dataframe representation of table
+
+# For fetching json files from the data contract, for now, they are stored in a dynamic table but in the description field. The way to recover it from the nwb is as follows:
+json_dict = json.dumps(nwb.acquisition[key].description)
 ```
 
 The acqusition module in the nwb is structured as follows:
