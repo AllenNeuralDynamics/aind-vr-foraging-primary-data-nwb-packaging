@@ -343,7 +343,7 @@ def get_data_contract(dataset_root: Path) -> Dataset:
                             description="The torque instructed to be applied to the treadmill. Timestamps are software-derived, use the Harp device events for hardware timestamps.",
                             reader_params=Csv.make_params(
                                 path=dataset_root
-                                / "behavior/OperationControl/CurrentPosition.csv",
+                                / "behavior/OperationControl/Torque.csv",
                             ),
                         ),
                         Csv(
