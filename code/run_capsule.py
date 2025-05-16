@@ -6,6 +6,7 @@ import data_contract
 import pandas as pd
 import pynwb
 import utils
+from aind_behavior_core_analysis._core import DataStream
 from aind_behavior_core_analysis.utils import load_branch
 from dateutil import parser
 from hdmf_zarr import NWBZarrIO
@@ -49,6 +50,39 @@ def add_event(
         )
 
 
+def get_top_level_stream(
+    streams: tuple[DataStream], key_to_match: str = "Behavior"
+) -> DataStream:
+    """
+    Identifies and returns the top-level data stream from a tuple of streams.
+
+    This function assumes there is one such stream that serves as the entry point or parent in the stream hierarchy.
+
+    Parameters
+    ----------
+    streams : tuple of DataStream
+        A tuple containing multiple DataStream objects from which the top-level stream
+        will be identified.
+
+    key_to_match: str
+        The name to match the top-level stream that is desired
+
+    Returns
+    -------
+    DataStream
+        The top-level stream among the input streams.
+    """
+    top_level_stream = None
+    for stream in streams:
+        if (
+            stream.parent.parent is None and stream.name == key_to_match
+        ):  # found the desired top level stream
+            top_level_stream = stream
+            break
+
+    return top_level_stream
+
+
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -78,6 +112,7 @@ if __name__ == "__main__":
     dataset = data_contract.get_data_contract(primary_data_path[0])
     exec = load_branch(dataset.data_streams)  # load tree structure
     streams = tuple(dataset.data_streams.walk_data_streams())  # get all data streams
+    top_level_stream = get_top_level_stream(streams)
     timeseries_groups = {}
     event_groups = {}
 
@@ -95,41 +130,32 @@ if __name__ == "__main__":
             continue
 
         if isinstance(stream.parent, data_contract.HarpDevice):
-            timeseries_groups = utils.get_harp_nwb_streams(timeseries_groups, stream)
+            timeseries_groups = utils.get_harp_nwb_streams(
+                timeseries_groups, stream, top_level_stream
+            )
         elif isinstance(stream, data_contract.SoftwareEvents):
-            event_groups = utils.get_software_events_nwb_streams(event_groups, stream)
+            event_groups = utils.get_software_events_nwb_streams(
+                event_groups, stream, top_level_stream
+            )
         elif isinstance(stream, data_contract.Csv):
-            if stream.parent.name == "Behavior":  # add directly, no nested streams
-                nwb_file.add_acquisition(
-                    pynwb.core.DynamicTable.from_dataframe(
-                        name=stream.name,
-                        table_description=stream.description,
-                        df=stream.data.reset_index(),
-                    )
-                )
-            else:
-                key = stream.parent.name
-                timeseries_groups = utils.add_table_to_group(
-                    timeseries_groups,
-                    stream.data.reset_index(),
-                    key,
-                    stream.name,
-                    stream.parent.description,
-                )
+            name = utils.get_stream_name(stream, top_level_stream)
+            timeseries_groups = utils.add_table_to_group(
+                timeseries_groups,
+                stream.data.reset_index(),
+                name,
+                stream.parent.description,
+            )
         elif isinstance(stream, data_contract.PydanticModel):
             data = stream.data.model_dump()
-            """
-            if "name" in data:  # conflicting key with nwb, have to remove
-                del data["name"]
 
-            #custom_data = utils.custom_data_interface(name=stream.name, data=data)
-            #custom_data.add_data()
-            """
             for key in data:
                 if isinstance(data[key], datetime):
                     data[key] = data[key].isoformat()
             nwb_file.add_acquisition(
-                pynwb.core.DynamicTable(name=stream.name, description=json.dumps(data))
+                pynwb.core.DynamicTable(
+                    name=utils.get_stream_name(stream, top_level_stream),
+                    description=json.dumps(data),
+                )
             )
 
     for group, table_group in timeseries_groups.items():
@@ -141,7 +167,8 @@ if __name__ == "__main__":
             nwb_file.add_acquisition(table)
 
     meanings_table = MeaningsTable(
-        name="event_descriptions", description="Describes meaning of event and the corresponding data"
+        name="event_descriptions",
+        description="Describes meaning of event and the corresponding data",
     )
     events_table = EventsTable(
         name="events",

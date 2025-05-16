@@ -76,7 +76,6 @@ def add_table_to_group(
     group: dict[str, table_group],
     data: pd.DataFrame,
     key: str,
-    table_name: str,
     description: str,
 ) -> dict[str, table_group]:
     """
@@ -91,8 +90,6 @@ def add_table_to_group(
         The DataFrame to be added to the group.
     key : str
         The key identifying which `table_group` in the dictionary the table should be added to.
-    table_name : str
-        The name to assign to the new table within the `table_group`.
     description : str
         A description of what the table represents.
 
@@ -106,15 +103,51 @@ def add_table_to_group(
 
     group[key].add_table(
         pynwb.core.DynamicTable.from_dataframe(
-            name=f"{key}.{table_name}", table_description=description, df=data
+            name=f"{key}", table_description=description, df=data
         )
     )
 
     return group
 
 
+def get_stream_name(stream: DataStream, top_level_stream: DataStream) -> str:
+    """
+    Generates a name for a given data stream relative to a top-level stream.
+
+    This function determines a name that uniquely identifies the `stream` within the context
+    of the `top_level_stream`.
+
+    Parameters
+    ----------
+    stream : DataStream
+        The target data stream for which to generate a name.
+
+    top_level_stream : DataStream
+        The root or top-level data stream that provides context for the name generation.
+
+    Returns
+    -------
+    str
+        The name of the stream with respect to the top-level stream passed in
+    """
+    name = None
+
+    while stream.name != top_level_stream.name:
+        if name is None:
+            name = stream.name
+        else:
+            name = f"{stream.name}.{name}"
+
+        stream = stream.parent
+
+    name = f"{top_level_stream.name}.{name}"
+    return name
+
+
 def get_harp_nwb_streams(
-    timeseries_groups: dict[str, table_group], stream: DataStream
+    timeseries_groups: dict[str, table_group],
+    stream: DataStream,
+    top_level_stream: DataStream,
 ) -> dict[str, table_group]:
     """
     Extract and add harp NWB time series data from a stream to existing table groups.
@@ -125,50 +158,32 @@ def get_harp_nwb_streams(
         A dictionary where each key maps to a `table_group` object containing time series tables.
     stream : DataStream
         The data stream object containing harp NWB time series data to be extracted.
-
+    top_level_stream: DataStream
+        The data stream object at the desired top level. Used for naming in nwb table
     Returns
     -------
     dict[str, table_group]
         The updated dictionary of `table_group` objects with additional tables added from the stream.
     """
-    if stream.parent.parent.name == "HarpCommands":
-        key = stream.parent.parent.name
-        description = (
-            f"{key}: {stream.parent.name}.{stream.name} - {stream.description}"
+
+    name = get_stream_name(stream, top_level_stream)
+    try:
+        timeseries_groups = add_table_to_group(
+            timeseries_groups,
+            stream.data.reset_index(),
+            name,
+            stream.description,
         )
-        table_name = f"{stream.parent.name}.{stream.name}"
-        try:
-            timeseries_groups = add_table_to_group(
-                timeseries_groups,
-                stream.data.reset_index(),
-                key,
-                table_name,
-                description,
-            )
-        except (ValueError, FileNotFoundError) as e:
-            logger.info(
-                f"Failed to get {stream.name} from {stream.parent} - {stream.parent.parent.name} with error {e}"
-            )
-    else:
-        key = stream.parent.name
-        try:
-            timeseries_groups = add_table_to_group(
-                timeseries_groups,
-                stream.data.reset_index(),
-                key,
-                stream.name,
-                stream.description,
-            )
-        except ValueError as e:
-            logger.info(
-                f"Failed to get {stream.name} from {stream.parent} with error {e}"
-            )
+    except ValueError as e:
+        logger.info(f"Failed to get {stream.name} from {stream.parent} with error {e}")
 
     return timeseries_groups
 
 
 def get_software_events_nwb_streams(
-    event_groups: dict[str, table_group], stream: DataStream
+    event_groups: dict[str, table_group],
+    stream: DataStream,
+    top_level_stream: DataStream,
 ):
     """
     Extracts and add software event data from an NWB stream to existing event groups.
@@ -180,14 +195,15 @@ def get_software_events_nwb_streams(
     stream : DataStream
         The data stream object containing software event data in NWB format to be extracted and added
         to the event groups.
-
+    top_level_stream: DataStream
+        The data stream object at the desired top level. Used for naming in nwb table
     Returns
     -------
     dict[str, table_group]
         The updated dictionary of `table_group` objects, now containing the software events
         extracted from the stream.
     """
-    key = stream.parent.name
+    name = get_stream_name(stream, top_level_stream)
 
     try:
         data = stream.data.reset_index()
@@ -201,13 +217,7 @@ def get_software_events_nwb_streams(
                 lambda x: json.dumps(x) if isinstance(x, dict) else x
             )
 
-        # data['timestamp_source'] = data['timestamp_source'].apply(lambda x: x.value)
-        # data['data_type'] = data['data_type'].apply(lambda x: x.value)
-        # Convert dicts to JSON strings
-        # data['data'] = data['data'].apply(lambda x: json.dumps(x) if isinstance(x, dict) else x)
-        event_groups = add_table_to_group(
-            event_groups, data, key, stream.name, stream.description
-        )
+        event_groups = add_table_to_group(event_groups, data, name, stream.description)
     except (ValueError, FileNotFoundError) as e:
         logger.info(f"Failed to get {stream.name} from {stream.parent} with error {e}")
 
