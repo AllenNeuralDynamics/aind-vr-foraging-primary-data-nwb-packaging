@@ -139,12 +139,15 @@ if __name__ == "__main__":
             )
         elif isinstance(stream, data_contract.Csv):
             name = utils.get_stream_name(stream, top_level_stream)
-            timeseries_groups = utils.add_table_to_group(
-                timeseries_groups,
-                stream.data.reset_index(),
-                name,
-                stream.parent.description,
-            )
+            try:
+                timeseries_groups = utils.add_table_to_group(
+                    timeseries_groups,
+                    stream.data.reset_index(),
+                    name,
+                    stream.parent.description,
+                )
+            except(ValueError, FileNotFoundError) as e:
+                logger.info(f"Failed to load {stream.name} with exception {e}")
         elif isinstance(stream, data_contract.PydanticModel):
             data = stream.data.model_dump()
 
