@@ -29,12 +29,12 @@ This module contains tables recorded from Harp hardware. Each entry is a `Dynami
 
 ### 📑 DynamicTables
 
-- `HarpBehavior.AnalogData`
-- `HarpBehavior.AssemblyVersion`
-- `HarpBehavior.Camera0Frame`
-- `HarpBehavior.Camera0Frequency`
-- `HarpBehavior.Camera1Frame`
-- `HarpBehavior.Camera1Frequency`
-- `HarpBehavior.ClockConfiguration`
-- `HarpBehavior.CoreVersionHigh`
+- `Behavior.HarpBehavior.AnalogData`
+- `Behavior.HarpBehavior.AssemblyVersion`
+- `Behavior.HarpBehavior.Camera0Frame`
+- `Behavior.HarpBehavior.Camera0Frequency`
+- `Behavior.HarpBehavior.Camera1Frame`
+- `Behavior.HarpBehavior.Camera1Frequency`
+- `Behavior.HarpBehavior.ClockConfiguration`
+- `Behavior.HarpBehavior.CoreVersionHigh`
 - `...`
