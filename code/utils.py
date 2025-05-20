@@ -84,47 +84,6 @@ def get_top_level_stream(
     return top_level_stream
 
 
-def add_table_to_group(
-    group: dict[str, list[pynwb.core.DynamicTable]],
-    data: pd.DataFrame,
-    key: str,
-    description: str,
-) -> dict[str, list[pynwb.core.DynamicTable]]:
-    """
-    Add a DataFrame as a dynamic table to a dictionary for a given stream
-
-    Parameters
-    ----------
-    group : dict[str, list[pynwb.core.DynamicTable]]
-        A dictionary mapping streams to a list of pynwb Dynamic Tables
-    data : pd.DataFrame
-        The DataFrame to be added to the group.
-    key : str
-        The key in the dictionary for which the table should be added to. Also will be the table name
-    description : str
-        A description of what the table represents.
-
-    Returns
-    -------
-    dict[str, list[pynwb.core.DynamicTable]]
-        The updated dictionary with the new table added.
-    """
-    if key not in group:
-        group[key] = [
-            pynwb.core.DynamicTable.from_dataframe(
-                name=f"{key}", table_description=description, df=data
-            )
-        ]
-    else:
-        group[key].append(
-            pynwb.core.DynamicTable.from_dataframe(
-                name=f"{key}", table_description=description, df=data
-            )
-        )
-
-    return group
-
-
 def get_stream_name(stream: DataStream, top_level_stream: DataStream) -> str:
     """
     Generates a name for a given data stream relative to a top-level stream. Mainly for naming in the nwb tables.

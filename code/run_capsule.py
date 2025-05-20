@@ -47,8 +47,7 @@ if __name__ == "__main__":
     exec = load_branch(dataset.data_streams)  # load tree structure
     streams = tuple(dataset.data_streams.walk_data_streams())  # get all data streams
     top_level_stream = utils.get_top_level_stream(streams)
-    timeseries_groups = {}
-    event_groups = {}
+    event_data = []  # for adding to events table
 
     # using this ndx object for events table
     nwb_file = NdxEventsNWBFile(
@@ -68,20 +67,22 @@ if __name__ == "__main__":
             stream, data_contract.Csv
         ):
             try:
-                timeseries_groups = utils.add_table_to_group(
-                    timeseries_groups,
-                    stream.data.reset_index(),
-                    name,
-                    stream.description,
+                dynamic_table = pynwb.core.DyanmicTable.from_dataframe(
+                    name=name,
+                    table_description=stream.description,
+                    df=stream.data.reset_index(),
                 )
+                nwb_file.add_acquisition(dynamic_table)
             except (ValueError, FileNotFoundError) as e:
                 logger.info(f"Failed to load {stream.name} with exception {e}")
         elif isinstance(stream, data_contract.SoftwareEvents):
             try:
                 data = utils.clean_dataframe_for_nwb(stream.data.reset_index())
-                event_groups = utils.add_table_to_group(
-                    event_groups, data, name, stream.description
+                dynamic_table = pynwb.core.DynamicTable.from_dataframe(
+                    name=name, table_description=stream.description, df=data
                 )
+                event_data.append(dynamic_table)
+                nwb_file.add_acquisition(dynamic_table)
             except (ValueError, FileNotFoundError) as e:
                 logger.info(
                     f"Failed to get {stream.name} from {stream.parent} with error {e}"
@@ -95,14 +96,6 @@ if __name__ == "__main__":
                     description=json.dumps(data),
                 )
             )
-
-    for group, tables in timeseries_groups.items():
-        for table in tables:
-            nwb_file.add_acquisition(table)
-
-    for group, tables in event_groups.items():
-        for table in tables:
-            nwb_file.add_acquisition(table)
 
     meanings_table = MeaningsTable(
         name="event_descriptions",
@@ -120,9 +113,8 @@ if __name__ == "__main__":
         name="event_data", description="event data from the acquisition workflow"
     )
 
-    for group, tables in event_groups.items():
-        for event_data in tables:
-            utils.add_event(events_table, meanings_table, event_data)
+    for table in event_data:
+        utils.add_event(events_table, meanings_table, table)
 
     nwb_file.add_events_table(events_table)
 
