@@ -19,7 +19,7 @@ print(data)
 data_df = data[:] # gives a dataframe representation of table
 
 # For fetching json files from the data contract, for now, they are stored in a dynamic table but in the description field. The way to recover it from the nwb is as follows:
-json_dict = json.dumps(nwb.acquisition[key].description)
+json_dict = json.loads(nwb.acquisition[key].description)
 ```
 
 The acqusition module in the nwb is structured as follows:
