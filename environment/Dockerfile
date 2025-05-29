@@ -1,4 +1,4 @@
-# hash:sha256:ef1dcc57bb7534b4c04aaef6352ed62a6ac1b21f6787ce7d7142a2b6703eca1e
+# hash:sha256:e441bb34a6c3edf552be4feeb26b4d49745286329e54974df15067ef5fc464f7
 ARG REGISTRY_HOST
 FROM $REGISTRY_HOST/codeocean/mambaforge3:24.5.0-0-python3.12.4-ubuntu22.04
 
@@ -17,6 +17,7 @@ RUN apt-get update \
 RUN pip install -U --no-cache-dir \
     contraqctor==0.4.1 \
     hdmf-zarr==0.11.1 \
+    pydantic-settings==2.9.1 \
     pynwb==3.0.0 \
     -e git+https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.git@feat-add-data-contract#egg=aind-behavior-vr-foraging \
     -e git+https://github.com/rly/ndx-events.git@0d4e8efdcf1ab2eb9da9ca078b4522fcb82fa8a6#egg=ndx-events

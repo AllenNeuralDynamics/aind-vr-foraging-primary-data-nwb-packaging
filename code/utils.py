@@ -11,9 +11,6 @@ import pynwb
 from contraqctor.contract import Dataset, DataStream
 from ndx_events import EventsTable, MeaningsTable
 
-DATA_PATH = Path("/data")
-RESULTS_PATH = Path("/results")
-
 logger = logging.getLogger(__name__)
 
 

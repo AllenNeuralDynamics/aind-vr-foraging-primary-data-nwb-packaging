@@ -1,5 +1,6 @@
 import json
 import logging
+from pathlib import Path
 
 import contraqctor.contract as data_contract
 import pynwb
@@ -8,15 +9,32 @@ from aind_behavior_vr_foraging.data_contract import dataset
 from dateutil import parser
 from hdmf_zarr import NWBZarrIO
 from ndx_events import EventsTable, MeaningsTable, NdxEventsNWBFile
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 logger = logging.getLogger(__name__)
+
+
+class vr_foraging_settings(BaseSettings, cli_parse_args=True):
+    """
+    Settings for VR Foraging Primary Data NWB Packaging
+    """
+
+    input_directory: Path = Field(
+        default=Path("/data/"), description="Directory where data is"
+    )
+    output_directory: Path = Field(
+        default=Path("/results/"), description="Output directory"
+    )
+
 
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
 
-    primary_data_path = tuple(utils.DATA_PATH.glob("*"))
+    settings = vr_foraging_settings()
+    primary_data_path = tuple(settings.input_directory.glob("*"))
     if not primary_data_path:
         raise FileNotFoundError("No primary data asset attached")
 
@@ -25,8 +43,10 @@ if __name__ == "__main__":
             "Multiple primary data assets attached. Only single asset needed"
         )
 
-    session_json_path = tuple(utils.DATA_PATH.glob("*/session.json"))
-    data_description_json_path = tuple(utils.DATA_PATH.glob("*/data_description.json"))
+    session_json_path = tuple(settings.input_directory.glob("*/session.json"))
+    data_description_json_path = tuple(
+        settings.input_directory.glob("*/data_description.json")
+    )
     if not session_json_path:
         raise FileNotFoundError("Primary data asset has no session json file")
     if not data_description_json_path:
@@ -116,7 +136,7 @@ if __name__ == "__main__":
     nwb_file.add_events_table(events_table)
 
     nwb_result_path = (
-        utils.RESULTS_PATH / f"{data_description_json['name']}_primary_nwb"
+        settings.output_directory / f"{data_description_json['name']}_primary_nwb"
     )
     logger.info(
         f"Succesfully finished nwb acquisition packaging with timeseries and events. Writing to disk now at path {nwb_result_path} as zarr"
