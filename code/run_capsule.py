@@ -1,13 +1,10 @@
 import json
 import logging
-from datetime import datetime
 
-import data_contract
-import pandas as pd
+import contraqctor.contract as data_contract
 import pynwb
 import utils
-from aind_behavior_core_analysis._core import DataStream
-from aind_behavior_core_analysis.utils import load_branch
+from aind_behavior_vr_foraging.data_contract import dataset
 from dateutil import parser
 from hdmf_zarr import NWBZarrIO
 from ndx_events import EventsTable, MeaningsTable, NdxEventsNWBFile
@@ -43,10 +40,9 @@ if __name__ == "__main__":
         f"Found primary data {data_description_json["name"]}. Starting acquisition nwb packaging now"
     )
 
-    dataset = data_contract.get_data_contract(primary_data_path[0])
-    exec = load_branch(dataset.data_streams)  # load tree structure
-    streams = tuple(dataset.data_streams.walk_data_streams())  # get all data streams
-    top_level_stream = utils.get_top_level_stream(streams)
+    vr_foraging_dataset = dataset(primary_data_path[0])
+    exec = vr_foraging_dataset.load_all()  # load tree structure
+    streams = tuple(vr_foraging_dataset.iter_all())
     event_data = []  # for adding to events table
 
     # using this ndx object for events table
@@ -62,20 +58,21 @@ if __name__ == "__main__":
         ):  # only process leaf nodes which is what will be ultimately packaged into nwb
             continue
 
-        name = utils.get_stream_name(stream, top_level_stream)
-        if isinstance(stream.parent, data_contract.HarpDevice) or isinstance(
-            stream, data_contract.Csv
+        name = stream.resolved_name.replace("::", ".")
+        name = name[name.index(".") + 1 :]
+        if isinstance(stream.parent, data_contract.harp.HarpDevice) or isinstance(
+            stream, data_contract.csv.Csv
         ):
             try:
-                dynamic_table = pynwb.core.DyanmicTable.from_dataframe(
+                dynamic_table = pynwb.core.DynamicTable.from_dataframe(
                     name=name,
                     table_description=stream.description,
                     df=stream.data.reset_index(),
                 )
                 nwb_file.add_acquisition(dynamic_table)
             except (ValueError, FileNotFoundError) as e:
-                logger.info(f"Failed to load {stream.name} with exception {e}")
-        elif isinstance(stream, data_contract.SoftwareEvents):
+                logger.error(f"Failed to load {stream.name} with exception {e}")
+        elif isinstance(stream, data_contract.json.SoftwareEvents):
             try:
                 data = utils.clean_dataframe_for_nwb(stream.data.reset_index())
                 dynamic_table = pynwb.core.DynamicTable.from_dataframe(
@@ -84,10 +81,10 @@ if __name__ == "__main__":
                 event_data.append(dynamic_table)
                 nwb_file.add_acquisition(dynamic_table)
             except (ValueError, FileNotFoundError) as e:
-                logger.info(
+                logger.error(
                     f"Failed to get {stream.name} from {stream.parent} with error {e}"
                 )
-        elif isinstance(stream, data_contract.PydanticModel):
+        elif isinstance(stream, data_contract.json.PydanticModel):
             data = utils.clean_dictionary_for_nwb(stream.data.model_dump())
 
             nwb_file.add_acquisition(

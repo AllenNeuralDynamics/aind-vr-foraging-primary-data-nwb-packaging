@@ -3,11 +3,12 @@ import logging
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
+from typing import Any, Dict, List, Union
 
 import numpy as np
 import pandas as pd
 import pynwb
-from aind_behavior_core_analysis._core import DataStream
+from contraqctor.contract import Dataset, DataStream
 from ndx_events import EventsTable, MeaningsTable
 
 DATA_PATH = Path("/data")
@@ -52,7 +53,7 @@ def add_event(
 
 
 def get_top_level_stream(
-    streams: tuple[DataStream], key_to_match: str = "Behavior"
+    streams: Dataset, key_to_match: str = "Behavior"
 ) -> DataStream:
     """
     Identifies and returns the top-level data stream from a tuple of streams.
@@ -84,7 +85,9 @@ def get_top_level_stream(
     return top_level_stream
 
 
-def get_stream_name(stream: DataStream, top_level_stream: DataStream) -> str:
+def get_stream_name(
+    stream: DataStream, top_level_stream: DataStream
+) -> Union[str, None]:
     """
     Generates a name for a given data stream relative to a top-level stream. Mainly for naming in the nwb tables.
 
@@ -113,6 +116,8 @@ def get_stream_name(stream: DataStream, top_level_stream: DataStream) -> str:
             name = f"{stream.name}.{name}"
 
         stream = stream.parent
+        if stream is None:
+            return None
 
     name = f"{top_level_stream.name}.{name}"
     return name
@@ -149,6 +154,32 @@ def clean_dataframe_for_nwb(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
+def datetime_to_iso_in_dict(
+    data: Union[Dict[str, Any], List[Any], datetime, Any],
+) -> Union[Dict[str, Any], List[Any], str, Any]:
+    """
+    Recursively convert all `datetime` objects in a nested dictionary or list to strings.
+
+    Parameters
+    ----------
+    data : dict or list or datetime or any
+        Input data structure which may contain nested dictionaries, lists, and datetime objects.
+
+    Returns
+    -------
+    dict or list or str or any
+    All values in nested dict converted from datetime to string
+    """
+    if isinstance(data, dict):
+        return {k: datetime_to_iso_in_dict(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [datetime_to_iso_in_dict(item) for item in data]
+    elif isinstance(data, datetime):
+        return data.isoformat()
+    else:
+        return data
+
+
 def clean_dictionary_for_nwb(data: dict) -> dict:
     """
     Clean a dictionary to ensure compatibility with the NWB format.
@@ -162,8 +193,5 @@ def clean_dictionary_for_nwb(data: dict) -> dict:
     dict
         A cleaned dictionary with NWB-compliant data
     """
-    for key in data:
-        if isinstance(data[key], datetime):
-            data[key] = data[key].isoformat()
 
-    return data
+    return datetime_to_iso_in_dict(data)

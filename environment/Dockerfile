@@ -1,4 +1,4 @@
-# hash:sha256:f879b62675d4f3e653c6803af1ab08495c5cc25a7a235ba6a9c0dd35893ff38f
+# hash:sha256:ef1dcc57bb7534b4c04aaef6352ed62a6ac1b21f6787ce7d7142a2b6703eca1e
 ARG REGISTRY_HOST
 FROM $REGISTRY_HOST/codeocean/mambaforge3:24.5.0-0-python3.12.4-ubuntu22.04
 
@@ -8,10 +8,17 @@ ARG GIT_ASKPASS
 ARG GIT_ACCESS_TOKEN
 COPY git-askpass /
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgl1-mesa-glx=23.0.4-0ubuntu1~22.04.1 \
+        libglib2.0-0=2.72.4-0ubuntu2.5 \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install -U --no-cache-dir \
+    contraqctor==0.4.1 \
     hdmf-zarr==0.11.1 \
     pynwb==3.0.0 \
-    -e git+https://github.com/AllenNeuralDynamics/Aind.Behavior.CoreAnalysis.git@688c4a0e660c97a892c5a85a9ff2d4dea09aeb67#egg=aind-behavior-core-analysis \
+    -e git+https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.git@feat-add-data-contract#egg=aind-behavior-vr-foraging \
     -e git+https://github.com/rly/ndx-events.git@0d4e8efdcf1ab2eb9da9ca078b4522fcb82fa8a6#egg=ndx-events
 
 ADD "https://github.com/coder/code-server/releases/download/v4.95.3/code-server-4.95.3-linux-amd64.tar.gz" /.code-server/code-server.tar.gz
