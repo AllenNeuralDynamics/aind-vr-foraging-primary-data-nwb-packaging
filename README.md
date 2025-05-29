@@ -25,7 +25,7 @@ json_dict = json.loads(nwb.acquisition[key].description)
 The acqusition module in the nwb is structured as follows:
 ## 📁 NWBFile: Acqusition Module
 
-This module contains tables from the primary data. Each entry is a `DynamicTable` that can be accessed with the code snippet above.
+This module contains tables from the primary data. Each entry is a `DynamicTable` that can be accessed with the code snippet above. The tables with json information in the description are `Behavior.InputSchemas.Rig`, `Behavior.InputSchemas.Session`, and `Behavior.InputSchemas.TaskLogic`.
 
 ### 📑 DynamicTables
 
