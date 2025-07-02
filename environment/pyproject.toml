@@ -1,0 +1,20 @@
+[project]
+name = "aind-vr-foraging-primary-data-nwb-packaging"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aind-behavior-vr-foraging[data]",
+    "aind-data-schema>=1.4.0",
+    "aind-data-schema-models>=0.7.5",
+    "contraqctor>=0.4.3",
+    "pydantic-settings>=2.10.1",
+    "hdmf-zarr",
+    "pynwb",
+    "ndx-events"
+]
+
+[tool.uv.sources]
+aind-behavior-vr-foraging = { git = "https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.git", rev = "dev" }
+ndx-events = { git = "https://github.com/rly/ndx-events.git"}
