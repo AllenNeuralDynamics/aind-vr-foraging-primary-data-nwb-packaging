@@ -15,7 +15,7 @@ from pydantic_settings import BaseSettings
 logger = logging.getLogger(__name__)
 
 
-class vr_foraging_settings(BaseSettings, cli_parse_args=True):
+class VRForagingSettings(BaseSettings, cli_parse_args=True):
     """
     Settings for VR Foraging Primary Data NWB Packaging
     """
@@ -33,7 +33,7 @@ if __name__ == "__main__":
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
 
-    settings = vr_foraging_settings()
+    settings = VRForagingSettings()
     primary_data_path = tuple(settings.input_directory.glob("*"))
     if not primary_data_path:
         raise FileNotFoundError("No primary data asset attached")
