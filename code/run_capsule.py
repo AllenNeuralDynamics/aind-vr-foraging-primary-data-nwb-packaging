@@ -113,7 +113,7 @@ if __name__ == "__main__":
                     description=json.dumps(data),
                 )
             )
-
+    """
     meanings_table = MeaningsTable(
         name="event_descriptions",
         description="Describes meaning of event and the corresponding data",
@@ -134,12 +134,12 @@ if __name__ == "__main__":
         utils.add_event(events_table, meanings_table, table)
 
     nwb_file.add_events_table(events_table)
-
+    """
     nwb_result_path = (
-        settings.output_directory / f"{data_description_json['name']}_primary_nwb"
+        settings.output_directory / f"{data_description_json['name']}_nwb"
     )
     logger.info(
-        f"Succesfully finished nwb acquisition packaging with timeseries and events. Writing to disk now at path {nwb_result_path} as zarr"
+        f"Succesfully finished nwb acquisition packaging with timeseries. Writing to disk now at path {nwb_result_path} as zarr"
     )
     with NWBZarrIO(
         (nwb_result_path).as_posix(),
