@@ -1,0 +1,52 @@
+{
+	"version": 1,
+	"base_image": "codeocean/mambaforge3:24.5.0-0-python3.12.4-ubuntu22.04",
+	"options": {
+		"registry_host_arg": true,
+		"git_ask_pass": true
+	},
+	"installers": {
+		"apt": {
+			"packages": [
+				{
+					"name": "libgl1-mesa-glx",
+					"version": "23.0.4-0ubuntu1~22.04.1"
+				},
+				{
+					"name": "libglib2.0-0",
+					"version": "2.72.4-0ubuntu2.5"
+				}
+			],
+			"install_software_properties_common": true
+		},
+		"pip": {
+			"packages": [
+				{
+					"name": "contraqctor",
+					"version": "0.4.1"
+				},
+				{
+					"name": "git+https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.git#egg=aind-behavior-vr-foraging"
+				},
+				{
+					"name": "git+https://github.com/rly/ndx-events.git#egg=ndx-events",
+					"version": "0d4e8efdcf1ab2eb9da9ca078b4522fcb82fa8a6"
+				},
+				{
+					"name": "hdmf-zarr",
+					"version": "0.11.1"
+				},
+				{
+					"name": "pydantic-settings",
+					"version": "2.9.1"
+				},
+				{
+					"name": "pynwb",
+					"version": "3.0.0"
+				}
+			],
+			"options": {},
+			"pre_install_options": {}
+		}
+	}
+}
