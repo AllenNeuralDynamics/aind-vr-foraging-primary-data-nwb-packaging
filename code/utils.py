@@ -37,7 +37,7 @@ def clean_dataframe_for_nwb(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def datetime_to_iso_in_dict(
+def datetime_to_str_in_dict(
     data: Union[Dict[str, Any], List[Any], datetime, Any],
 ) -> Union[Dict[str, Any], List[Any], str, Any]:
     """
@@ -56,9 +56,9 @@ def datetime_to_iso_in_dict(
     All values in nested dict converted from datetime to string
     """
     if isinstance(data, dict):
-        return {k: datetime_to_iso_in_dict(v) for k, v in data.items()}
+        return {k: datetime_to_str_in_dict(v) for k, v in data.items()}
     elif isinstance(data, list):
-        return [datetime_to_iso_in_dict(item) for item in data]
+        return [datetime_to_str_in_dict(item) for item in data]
     elif isinstance(data, datetime):
         return data.isoformat()
     else:
@@ -79,4 +79,4 @@ def clean_dictionary_for_nwb(data: dict) -> dict:
         A cleaned dictionary with NWB-compliant data
     """
 
-    return datetime_to_iso_in_dict(data)
+    return datetime_to_str_in_dict(data)

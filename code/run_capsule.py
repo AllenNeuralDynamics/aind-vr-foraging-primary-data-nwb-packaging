@@ -81,7 +81,7 @@ if __name__ == "__main__":
     vr_foraging_dataset = dataset(
         primary_data_path[0], version=contract_version
     )
-    exec = vr_foraging_dataset.load_all()  # load tree structure
+    exec = vr_foraging_dataset["Behavior"].load_all()  # load tree structure
     streams = tuple(vr_foraging_dataset.iter_all())
     event_data = []  # for adding to events table
 
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         name = stream.resolved_name.replace("::", ".")
         name = name[name.index(".") + 1:]
         if isinstance(
-            stream.parent, data_contract.harp.HarpDevice
+            stream, data_contract.harp.HarpRegister
         ) or isinstance(stream, data_contract.csv.Csv):
             try:
                 dynamic_table = pynwb.core.DynamicTable.from_dataframe(
