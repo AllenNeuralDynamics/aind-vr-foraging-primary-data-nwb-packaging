@@ -1,12 +1,12 @@
 # VR Foraging Primary Data NWB Packaging
 
-The capsule can be found here: https://codeocean.allenneuraldynamics.org/capsule/3265591/tree. 
+The capsule can be found [here](https://codeocean.allenneuraldynamics.org/capsule/3265591/tree). 
 
-This capsule packages VR Foraging Primary Data into NWB following the file standards listed here: https://github.com/AllenNeuralDynamics/aind-file-standards/blob/main/file_formats/nwb.md. 
+This capsule packages VR Foraging Primary Data into NWB following the file standards listed [here](https://github.com/AllenNeuralDynamics/aind-file-standards/blob/main/file_formats/nwb.md). 
 
-The input data contract can be found at the following: https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging/blob/feat-add-data-contract/src/DataSchemas/aind_behavior_vr_foraging/data_contract.py. 
+The capsule uses a data contract with relevants paths to raw data to be packaged. An example can be found at the [following](https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging/blob/main/src/aind_behavior_vr_foraging/data_contract/v0_5_0.py). 
 
-The output of this packaging is an nwb file with data in the `acquisition` and `events` modules. Most, if not all of the data in the nwb are stored as `DynamicTables`, a table representation of the various streams from the input data contract. To read the nwb and access the data, the following code snippet can be run - dependencies are `hdmf-zarr`, and `pynwb`.
+The output of this packaging is an nwb file with data in the `acquisition` module. Most, if not all of the data in the nwb are stored as `DynamicTables`, a table representation of the various streams from the input data contract. To read the nwb and access the data, the following code snippet can be run - dependencies are `hdmf-zarr`, and `pynwb`.
 
 ```
 from hdmf_zarr import NWBZarrIO
