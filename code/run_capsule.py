@@ -5,6 +5,7 @@ from pathlib import Path
 import contraqctor.contract as data_contract
 import pynwb
 from aind_behavior_vr_foraging.data_contract import dataset
+from aind_nwb_utils.utils import get_subject_nwb_object
 from dateutil import parser
 from hdmf_zarr import NWBZarrIO
 from ndx_events import NdxEventsNWBFile
@@ -48,6 +49,7 @@ if __name__ == "__main__":
     data_description_json_path = tuple(
         settings.input_directory.glob("*/data_description.json")
     )
+    subject_json_path = tuple(settings.input_directory.glob("*/subject.json"))
     if not session_json_path:
         raise FileNotFoundError("Primary data asset has no session json file")
     if not data_description_json_path:
@@ -55,10 +57,15 @@ if __name__ == "__main__":
             "Primary data asset has no data description json"
         )
 
+    if not subject_json_path:
+        raise FileNotFoundError("Primary data asset has no subject json")
+
     with open(session_json_path[0], "r") as f:
         session_json = json.load(f)
     with open(data_description_json_path[0], "r") as f:
         data_description_json = json.load(f)
+    with open(subject_json_path[0], "r") as f:
+        subject_json = json.load(f)
     logger.info(
         f"Found primary data {data_description_json['name']}. \
         Starting acquisition nwb packaging now"
@@ -88,9 +95,10 @@ if __name__ == "__main__":
     # using this ndx object for events table
     nwb_file = NdxEventsNWBFile(
         session_id=data_description_json["name"],
-        session_description=session_json["session_type"],
+        session_description=f"Version {contract_version}",
         session_start_time=parser.parse(session_json["session_start_time"]),
         identifier=data_description_json["subject_id"],
+        subject=get_subject_nwb_object(data_description_json, subject_json),
     )
     for stream in streams:
         if stream.is_collection:  # only process leaf nodes into nwb
@@ -98,9 +106,9 @@ if __name__ == "__main__":
 
         name = stream.resolved_name.replace("::", ".")
         name = name[name.index(".") + 1:]
-        if isinstance(
-            stream, data_contract.harp.HarpRegister
-        ) or isinstance(stream, data_contract.csv.Csv):
+        if isinstance(stream, data_contract.harp.HarpRegister) or isinstance(
+            stream, data_contract.csv.Csv
+        ):
             try:
                 dynamic_table = pynwb.core.DynamicTable.from_dataframe(
                     name=name,

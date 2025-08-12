@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "aind-behavior-vr-foraging[dev]",
+    "aind-nwb-utils",
     "hdmf-zarr",
     "pynwb",
     "ndx-events"
