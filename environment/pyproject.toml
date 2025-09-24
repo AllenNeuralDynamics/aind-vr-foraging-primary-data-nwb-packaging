@@ -5,7 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "aind-behavior-vr-foraging[dev]",
+    "aind-behavior-vr-foraging[data]",
+    "contraqctor>=0.4.3",
     "aind-nwb-utils",
     "hdmf-zarr",
     "pynwb",
@@ -13,5 +14,5 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-aind-behavior-vr-foraging = { git = "https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.git", rev = "4f194d22fae91f8108ab26cecba19527b9f19485"}
-ndx-events = { git = "https://github.com/rly/ndx-events.git"}
+aind-behavior-vr-foraging = { git = "https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.git", rev = "main"}
+ndx-events = { git = "https://github.com/rly/ndx-events.git" }
