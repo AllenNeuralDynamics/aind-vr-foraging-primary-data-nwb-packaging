@@ -45,13 +45,13 @@ if __name__ == "__main__":
             "Multiple primary data assets attached. Only single asset needed"
         )
 
-    session_json_path = tuple(settings.input_directory.glob("*/session.json"))
+    acquisition_json_path = tuple(settings.input_directory.glob("*/acquisition.json"))
     data_description_json_path = tuple(
         settings.input_directory.glob("*/data_description.json")
     )
     subject_json_path = tuple(settings.input_directory.glob("*/subject.json"))
-    if not session_json_path:
-        raise FileNotFoundError("Primary data asset has no session json file")
+    if not acquisition_json_path:
+        raise FileNotFoundError("Primary data asset has no acquisition json file")
     if not data_description_json_path:
         raise FileNotFoundError(
             "Primary data asset has no data description json"
@@ -60,8 +60,8 @@ if __name__ == "__main__":
     if not subject_json_path:
         raise FileNotFoundError("Primary data asset has no subject json")
 
-    with open(session_json_path[0], "r") as f:
-        session_json = json.load(f)
+    with open(acquisition_json_path[0], "r") as f:
+        acquisition_json = json.load(f)
     with open(data_description_json_path[0], "r") as f:
         data_description_json = json.load(f)
     with open(subject_json_path[0], "r") as f:
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     nwb_file = NdxEventsNWBFile(
         session_id=data_description_json["name"],
         session_description=f"Version {contract_version}",
-        session_start_time=parser.parse(session_json["session_start_time"]),
+        session_start_time=parser.parse(acquisition_json["acquisition_start_time"]),
         identifier=data_description_json["subject_id"],
         subject=get_subject_nwb_object(data_description_json, subject_json),
     )
