@@ -50,11 +50,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/dd/3e/5232b4acad3565d8a19c6023a4f6ac4e53bd059281de73076da66f2d8cf0/aind_behavior_vr_foraging-0.6.1-py3-none-any.whl", hash = "sha256:27d288638d5ee51e5d52d1115833da30bb4756f4e8c4111261777681409c6ccc", size = 45590, upload-time = "2025-10-24T21:56:12.513Z" },
 ]
 
-[package.optional-dependencies]
-data = [
-    { name = "contraqctor" },
-]
-
 [[package]]
 name = "aind-nwb-utils"
 version = "0.1.1"
@@ -74,8 +69,9 @@ name = "aind-vr-foraging-primary-data-nwb-packaging"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "aind-behavior-vr-foraging", extra = ["data"] },
+    { name = "aind-behavior-vr-foraging" },
     { name = "aind-nwb-utils" },
+    { name = "contraqctor" },
     { name = "hdmf-zarr" },
     { name = "ndx-events" },
     { name = "pynwb" },
@@ -83,8 +79,9 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aind-behavior-vr-foraging", extras = ["data"] },
+    { name = "aind-behavior-vr-foraging" },
     { name = "aind-nwb-utils" },
+    { name = "contraqctor" },
     { name = "hdmf-zarr" },
     { name = "ndx-events", git = "https://github.com/rly/ndx-events.git" },
     { name = "pynwb" },
