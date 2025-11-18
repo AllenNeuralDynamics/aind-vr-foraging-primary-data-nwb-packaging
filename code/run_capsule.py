@@ -23,7 +23,7 @@ class VRForagingSettings(BaseSettings, cli_parse_args=True):
     """
 
     input_directory: Path = Field(
-        default=Path("/data/"), description="Directory where data is"
+        default=Path("/data"), description="Directory where data is"
     )
     output_directory: Path = Field(
         default=Path("/results/"), description="Output directory"
