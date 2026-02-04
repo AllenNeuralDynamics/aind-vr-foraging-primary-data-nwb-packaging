@@ -1,10 +1,14 @@
 import json
 import logging
+from datetime import datetime
 from pathlib import Path
 
 import contraqctor.contract as data_contract
 import pynwb
 from aind_behavior_vr_foraging.data_contract import dataset
+from aind_data_schema.components.identifiers import Code
+from aind_data_schema.core.processing import DataProcess, ProcessStage
+from aind_data_schema_models.process_names import ProcessName
 from aind_nwb_utils.utils import get_subject_nwb_object
 from dateutil import parser
 from hdmf_zarr import NWBZarrIO
@@ -18,7 +22,8 @@ from processing import process_sites
 import utils
 
 logger = logging.getLogger(__name__)
-
+VERSION="6.0"
+GITHUB_URL="https://github.com/AllenNeuralDynamics/aind-vr-foraging-primary-data-nwb-packaging.git"
 
 class VRForagingSettings(BaseSettings, cli_parse_args=True):
     """
@@ -39,6 +44,8 @@ if __name__ == "__main__":
     )
 
     settings = VRForagingSettings()
+    start_process_time = datetime.now()
+
     primary_data_path = tuple(settings.input_directory.glob("*"))
     if not primary_data_path:
         raise FileNotFoundError("No primary data asset attached")
@@ -168,3 +175,18 @@ if __name__ == "__main__":
     ) as io:
         io.write(nwb_file)
     logger.info(f"NWB zarr successfully written to path {nwb_result_path}")
+
+    end_process_time = datetime.now()
+    data_process = DataProcess(
+        start_date_time=start_process_time,
+        end_date_time=end_process_time,
+        stage=ProcessStage.PROCESSING,
+        process_type=ProcessName.PIPELINE,
+        experimenters=["Arjun Sridhar"],
+        code=Code(
+            url=GITHUB_URL,
+            version=VERSION
+        )
+    )
+    with open(settings.output_directory / "data_process.json", "w") as f:
+        f.write(data_process.model_dump_json(indent=4))
