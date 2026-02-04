@@ -12,6 +12,9 @@ from ndx_events import NdxEventsNWBFile
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
+from models import Site
+from processing import process_sites
+
 import utils
 
 logger = logging.getLogger(__name__)
@@ -91,6 +94,7 @@ if __name__ == "__main__":
     exec = vr_foraging_dataset["Behavior"].load_all()  # load tree structure
     streams = tuple(vr_foraging_dataset.iter_all())
     event_data = []  # for adding to events table
+    processed_sites = process_sites(vr_foraging_dataset)
 
     # using this ndx object for events table
     nwb_file = NdxEventsNWBFile(
@@ -143,11 +147,19 @@ if __name__ == "__main__":
                 )
             )
 
+    for field_name, field in Site.model_fields.items():
+        if field_name in ["start_time", "stop_time"]:
+            continue
+        nwb_file.add_trial_column(name=field_name, description=field.description)
+
+    for site in processed_sites:
+        nwb_file.add_trial(**site.model_dump())
+
     nwb_result_path = (
-        settings.output_directory / f"{data_description_json['name']}_nwb"
+        settings.output_directory / f"behavior.nwb.zarr"
     )
     logger.info(
-        "Succesfully finished nwb acquisition packaging with timeseries."
+        "Succesfully finished nwb packaging."
     )
     logger.info(f"Writing to disk now at path {nwb_result_path} as zarr")
     with NWBZarrIO(
