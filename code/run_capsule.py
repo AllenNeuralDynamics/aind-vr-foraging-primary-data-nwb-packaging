@@ -186,7 +186,8 @@ if __name__ == "__main__":
         code=Code(
             url=GITHUB_URL,
             version=VERSION
-        )
+        ),
+        output_parameters={}
     )
     with open(settings.output_directory / "data_process.json", "w") as f:
         f.write(data_process.model_dump_json(indent=4))
