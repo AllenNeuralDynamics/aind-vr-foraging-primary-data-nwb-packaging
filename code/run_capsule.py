@@ -187,7 +187,8 @@ if __name__ == "__main__":
             url=GITHUB_URL,
             version=VERSION
         ),
-        output_parameters={}
+        output_parameters={},
+        notes=f"Run with data contract version: {contract_version}"
     )
     with open(settings.output_directory / "data_process.json", "w") as f:
         f.write(data_process.model_dump_json(indent=4))
