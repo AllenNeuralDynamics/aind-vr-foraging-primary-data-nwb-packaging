@@ -22,7 +22,7 @@ from processing import process_sites
 import utils
 
 logger = logging.getLogger(__name__)
-VERSION="6.0"
+VERSION="7.0"
 GITHUB_URL="https://github.com/AllenNeuralDynamics/aind-vr-foraging-primary-data-nwb-packaging.git"
 
 class VRForagingSettings(BaseSettings, cli_parse_args=True):
