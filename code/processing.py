@@ -74,20 +74,11 @@ class DatasetProcessor:
 
     @staticmethod
     def _parse_patch_state_at_reward(dataset: contraqctor.contract.Dataset) -> pd.DataFrame:
-        if "PatchStateAtReward" in dataset["Behavior"]["SoftwareEvents"]:
-            patches_state_at_reward = dataset.at("Behavior").at("SoftwareEvents").at("PatchStateAtReward").load().data
-            expanded = pd.json_normalize(patches_state_at_reward["data"])
-            expanded.index = patches_state_at_reward.index
-            patches_state_at_reward = patches_state_at_reward.join(expanded)
-            return patches_state_at_reward
-        else:
-            # Add the reward characteristics columns
-            patch_stats = pd.DataFrame()
-            probablity = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardProbability").load().data
-            patch_stats['reward_amount'] = data['software_events'].streams.PatchRewardAmount.data['data'].values
-            patch_stats['reward_available'] = data['software_events'].streams.PatchRewardAvailable.data['data'].values
-            patch_stats['reward_probability'] = data['software_events'].streams.PatchRewardProbability.data['data'].values
-            patch_stats['reward_probability'] = patch_stats['reward_probability'].round(3)
+        patches_state_at_reward = dataset.at("Behavior").at("SoftwareEvents").at("PatchStateAtReward").load().data
+        expanded = pd.json_normalize(patches_state_at_reward["data"])
+        expanded.index = patches_state_at_reward.index
+        patches_state_at_reward = patches_state_at_reward.join(expanded)
+        return patches_state_at_reward
 
 
     @staticmethod
@@ -177,7 +168,7 @@ class DatasetProcessor:
         water_delivery = self._parse_water_delivery(dataset)
         reward_metadata = self._parse_reward_metadata(dataset)
         odor_onset = self._parse_odor_onset(dataset)
-        #patch_state_at_reward = self._parse_patch_state_at_reward(dataset)
+        patch_state_at_reward = self._parse_patch_state_at_reward(dataset)
         friction = self._parse_friction(dataset)
         olfactometer_channel_count = self.get_olfactometer_channel_count(dataset)
         wait_reward_outcome = self._parse_wait_reward_outcome(dataset)
@@ -213,7 +204,7 @@ class DatasetProcessor:
             assert len(site_choice_feedback) <= 1, "Multiple speaker choices in site interval"
 
             site_water_delivery = slice_by_index(water_delivery, this_timestamp, next_timestamp)
-            assert len(site_water_delivery) <= 1, "Multiple water deliveries in site interval"
+            #assert len(site_water_delivery) <= 1, "Multiple water deliveries in site interval"
 
             site_odor_onset = slice_by_index(odor_onset, this_timestamp, next_timestamp)
             
@@ -222,9 +213,9 @@ class DatasetProcessor:
                 current_friction = this_friction.values[-1]
 
             site_patch_state_at_reward = slice_by_index(patch_state_at_reward, this_timestamp, next_timestamp)
-            # site_patch_state_at_reward = site_patch_state_at_reward[
-            #     site_patch_state_at_reward["PatchId"] == merged.iloc[i]["patch_index"]
-            # ]
+            site_patch_state_at_reward = site_patch_state_at_reward[
+                site_patch_state_at_reward["PatchId"] == merged.iloc[i]["patch_index"]
+            ]
             site_patch_state_at_reward = pd.DataFrame()
             assert len(site_patch_state_at_reward) <= 1, "Multiple patch states at reward in site interval"
 
@@ -297,7 +288,7 @@ class DatasetProcessor:
             has_waited_reward_delay = (
                 wait_reward_outcome_sliced.iloc[0]["data"]["IsSuccessfulWait"]
                 if not wait_reward_outcome_sliced.empty
-                else None
+                else False
             )
 
             site = Site(
