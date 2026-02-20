@@ -17,7 +17,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 
 from models import Site
-from processing import process_sites
+from processing import DatasetProcessor
 
 import utils
 
@@ -101,7 +101,8 @@ if __name__ == "__main__":
     exec = vr_foraging_dataset["Behavior"].load_all()  # load tree structure
     streams = tuple(vr_foraging_dataset.iter_all())
     event_data = []  # for adding to events table
-    processed_sites = process_sites(vr_foraging_dataset)
+    processor = DatasetProcessor(vr_foraging_dataset, raise_on_error=False)
+    processed_sites = processor.process()
 
     # using this ndx object for events table
     nwb_file = NdxEventsNWBFile(
