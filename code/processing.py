@@ -216,7 +216,6 @@ class DatasetProcessor:
             site_patch_state_at_reward = site_patch_state_at_reward[
                 site_patch_state_at_reward["PatchId"] == merged.iloc[i]["patch_index"]
             ]
-            site_patch_state_at_reward = pd.DataFrame()
             assert len(site_patch_state_at_reward) <= 1, "Multiple patch states at reward in site interval"
 
             ##
