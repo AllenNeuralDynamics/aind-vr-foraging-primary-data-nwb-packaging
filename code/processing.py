@@ -14,7 +14,7 @@ from helper import slice_by_index
 
 logger = logging.getLogger(__name__)
 
-
+CHANNEL_CARRIER = 3
 class DatasetProcessorError(Exception):
     pass
 
@@ -111,7 +111,7 @@ class DatasetProcessor:
 
     def get_olfactometer_channel_count(self, dataset: contraqctor.contract.Dataset) -> int:
         if self.dataset_version < semver.Version.parse("0.7.0"):
-            return 3  # The channel 3 is always used as carrier, therefor only 3 odor channels are available.
+            return CHANNEL_CARRIER  # The channel 3 is always used as carrier, therefor only 3 odor channels are available.
         else:
             raise NotImplementedError("Olfactometer channel count parsing not implemented for rig versions < 0.7.0")
 
