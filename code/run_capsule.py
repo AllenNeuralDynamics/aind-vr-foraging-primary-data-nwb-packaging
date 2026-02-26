@@ -9,11 +9,12 @@ from aind_behavior_vr_foraging.data_contract import dataset
 from aind_data_schema.components.identifiers import Code
 from aind_data_schema.core.processing import DataProcess, ProcessStage
 from aind_data_schema_models.process_names import ProcessName
-from aind_nwb_utils.utils import get_subject_nwb_object
+from aind_nwb_utils.utils import create_base_nwb_file, get_subject_nwb_object
 from dateutil import parser
 from hdmf_zarr import NWBZarrIO
 from ndx_events import NdxEventsNWBFile
 from pydantic import Field
+from pydantic_core import ValidationError
 from pydantic_settings import BaseSettings
 
 from models import Site
@@ -95,23 +96,25 @@ if __name__ == "__main__":
 
     contract_version = task_input_logic["version"]
     logger.info(f"Using data contract version {contract_version}")
+  
     vr_foraging_dataset = dataset(
         primary_data_path[0], version=contract_version
     )
     exec = vr_foraging_dataset["Behavior"].load_all()  # load tree structure
     streams = tuple(vr_foraging_dataset.iter_all())
     event_data = []  # for adding to events table
-    processor = DatasetProcessor(vr_foraging_dataset, raise_on_error=False)
+    processor = DatasetProcessor(vr_foraging_dataset, primary_data_path[0], raise_on_error=False)
     processed_sites = processor.process()
 
-    # using this ndx object for events table
-    nwb_file = NdxEventsNWBFile(
-        session_id=data_description_json["name"],
-        session_description=f"Version {contract_version}",
-        session_start_time=parser.parse(acquisition_json["acquisition_start_time"]),
-        identifier=data_description_json["subject_id"],
-        subject=get_subject_nwb_object(data_description_json, subject_json),
-    )
+    # # using this ndx object for events table
+    # nwb_file = NdxEventsNWBFile(
+    #     session_id=data_description_json["name"],
+    #     session_description=f"Version {contract_version}",
+    #     session_start_time=parser.parse(acquisition_json["acquisition_start_time"]),
+    #     identifier=data_description_json["subject_id"],
+    #     subject=get_subject_nwb_object(data_description_json, subject_json),
+    # )
+    nwb_file = create_base_nwb_file(primary_data_path[0])
     for stream in streams:
         if stream.is_collection:  # only process leaf nodes into nwb
             continue
@@ -146,14 +149,20 @@ if __name__ == "__main__":
                     from {stream.parent} with error {e}"
                 )
         elif isinstance(stream, data_contract.json.PydanticModel):
-            data = utils.clean_dictionary_for_nwb(stream.data.model_dump())
+            try:
+                data = utils.clean_dictionary_for_nwb(stream.data.model_dump())
 
-            nwb_file.add_acquisition(
-                pynwb.core.DynamicTable(
-                    name=name,
-                    description=json.dumps(data),
+                nwb_file.add_acquisition(
+                    pynwb.core.DynamicTable(
+                        name=name,
+                        description=json.dumps(data),
+                    )
                 )
-            )
+            except (ValidationError) as e:
+                logger.error(
+                    f"Failed to get {stream.name} \
+                    from {stream.parent} with error {e}"
+                )
 
     for field_name, field in Site.model_fields.items():
         if field_name in ["start_time", "stop_time"]:
