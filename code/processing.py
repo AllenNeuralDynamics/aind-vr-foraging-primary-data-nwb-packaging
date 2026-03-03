@@ -1,3 +1,4 @@
+import json
 import logging
 import typing as t
 from packaging.version import Version
@@ -95,7 +96,7 @@ class DatasetProcessor:
             expanded = pd.json_normalize(patches_state_at_reward["data"])
             expanded.index = patches_state_at_reward.index
             patches_state_at_reward = patches_state_at_reward.join(expanded)
-        elif Version(str(dataset.version)) >= Version("0.5.0"):
+        elif Version(str(dataset.version)) >= Version("0.4.0"):
             # referencing https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Analysis/blob/afebaba21b7d22dabfe3e20d116f3ee3e1d43131/src/aind_vr_foraging_analysis/utils/parsing/parse.py#L1408
             reward_amount = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAmount").load().data
             reward_available = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAvailable").load().data
@@ -170,8 +171,15 @@ class DatasetProcessor:
         odor_sites = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("ActiveSite").load().data)
         patches = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("ActivePatch").load().data)
         patches["patch_count"] = range(len(patches))
-        blocks = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("Block").load().data)
-        blocks["block_count"] = range(len(blocks))
+
+        try:
+            blocks = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("Block").load().data)
+            blocks["block_count"] = range(len(blocks))
+        except KeyError:
+            logger.info("No block stream. Defaulting to using patches")
+            blocks = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("ActivePatch").load().data)
+            blocks["block_count"] = range(len(blocks))
+            
 
         # Merge nearest patch (backward in time)
         merged = pd.merge_asof(
