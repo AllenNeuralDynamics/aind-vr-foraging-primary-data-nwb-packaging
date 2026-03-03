@@ -133,7 +133,6 @@ if __name__ == "__main__":
                 dynamic_table = pynwb.core.DynamicTable.from_dataframe(
                     name=name, table_description=stream.description, df=data
                 )
-                event_data.append(dynamic_table)
                 nwb_file.add_acquisition(dynamic_table)
             except (ValueError, FileNotFoundError) as e:
                 logger.error(
