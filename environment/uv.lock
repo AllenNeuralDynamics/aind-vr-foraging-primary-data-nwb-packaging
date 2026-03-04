@@ -34,29 +34,29 @@ wheels = [
 
 [[package]]
 name = "aind-behavior-vr-foraging"
-version = "0.6.6"
+version = "0.6.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aind-behavior-services" },
     { name = "pydantic-settings" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/78/63/1b903299240df20243ccdba5a905495913d222f7bd39d6add11b046efc91/aind_behavior_vr_foraging-0.6.6.tar.gz", hash = "sha256:f89a959239ca7786c9f0435784528ac2f90b096915b11d8624434800889965af", size = 36323, upload-time = "2026-02-23T18:27:45.466Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/43/47/1f0bc18a9de3f05da5e7f6556eaa51469a4a04338b231d021891de1b5e4b/aind_behavior_vr_foraging-0.6.7.tar.gz", hash = "sha256:a1bbaf061ff83b26480cfe74b42412b451418a009fac5b13bf89300f15b9ddfb", size = 36313, upload-time = "2026-02-27T20:52:36.989Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/78/26/1bcfbb4b23b52fd95a69cd3a0a58c3269b74c89735ee0b837041075b06e5/aind_behavior_vr_foraging-0.6.6-py3-none-any.whl", hash = "sha256:0006f250901ca01554b0453c9b49c9d69eef3208442197be7af92b8988669a9f", size = 47383, upload-time = "2026-02-23T18:27:44.537Z" },
+    { url = "https://files.pythonhosted.org/packages/d7/ad/5ba2aaf77c2b9a51faf7b3ad378a73671cb9a2b7b750697d1ba2ac3a4854/aind_behavior_vr_foraging-0.6.7-py3-none-any.whl", hash = "sha256:375658e932fe199901008d8f604a715312512d317d74110ad158d763d7323a2d", size = 47385, upload-time = "2026-02-27T20:52:37.719Z" },
 ]
 
 [[package]]
 name = "aind-data-schema"
-version = "2.5.0"
+version = "2.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aind-data-schema-models" },
     { name = "pydantic" },
     { name = "pydantic-extra-types" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/92/30/a90d1a367733db0a813a5f5bebbc3cd837b59b1b46e3bd222978476e7517/aind_data_schema-2.5.0.tar.gz", hash = "sha256:9676f1afc4ac213444c0fc205d912589dcea54f93d5a2edacd64ad0041b4b81a", size = 891196, upload-time = "2026-02-17T22:51:23.651Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/43/9d/ed3b5aa33997dabe5c7071ce1ef95c45fd5180d9fdebe180556bcf7e6729/aind_data_schema-2.5.1.tar.gz", hash = "sha256:ed2dde28b1a508ecd7bfb30216d19c4763969c7bd548b944fd65f6a775012fda", size = 893577, upload-time = "2026-02-28T00:10:41.622Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d1/9e/af85e8cf319dd5822efa0cb33c5e7f7cae484b4c644dfb285c2a54f5ddfc/aind_data_schema-2.5.0-py3-none-any.whl", hash = "sha256:1e91fcf73b4b8625ba600bd76a2bfe261182b1279735e1df125ee7ed4c817b05", size = 90825, upload-time = "2026-02-17T22:51:21.962Z" },
+    { url = "https://files.pythonhosted.org/packages/df/3b/e3949d1ba795f2d7c419038cc62d6b17b60e851bdd4c38d44a0569d8ac37/aind_data_schema-2.5.1-py3-none-any.whl", hash = "sha256:b1abf739e5f18c034440cd3717fde7041ef8d6729cd8cb97742eb504b31d5132", size = 91625, upload-time = "2026-02-28T00:10:40.224Z" },
 ]
 
 [[package]]
@@ -1126,20 +1126,20 @@ wheels = [
 
 [[package]]
 name = "python-dotenv"
-version = "1.2.1"
+version = "1.2.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f0/26/19cadc79a718c5edbec86fd4919a6b6d3f681039a2f6d66d14be94e75fb9/python_dotenv-1.2.1.tar.gz", hash = "sha256:42667e897e16ab0d66954af0e60a9caa94f0fd4ecf3aaf6d2d260eec1aa36ad6", size = 44221, upload-time = "2025-10-26T15:12:10.434Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/82/ed/0301aeeac3e5353ef3d94b6ec08bbcabd04a72018415dcb29e588514bba8/python_dotenv-1.2.2.tar.gz", hash = "sha256:2c371a91fbd7ba082c2c1dc1f8bf89ca22564a087c2c287cd9b662adde799cf3", size = 50135, upload-time = "2026-03-01T16:00:26.196Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/14/1b/a298b06749107c305e1fe0f814c6c74aea7b2f1e10989cb30f544a1b3253/python_dotenv-1.2.1-py3-none-any.whl", hash = "sha256:b81ee9561e9ca4004139c6cbba3a238c32b03e4894671e181b671e8cb8425d61", size = 21230, upload-time = "2025-10-26T15:12:09.109Z" },
+    { url = "https://files.pythonhosted.org/packages/0b/d7/1959b9648791274998a9c3526f6d0ec8fd2233e4d4acce81bbae76b44b2a/python_dotenv-1.2.2-py3-none-any.whl", hash = "sha256:1d8214789a24de455a8b8bd8ae6fe3c6b69a5e3d64aa8a8e5d68e694bbcb285a", size = 22101, upload-time = "2026-03-01T16:00:25.09Z" },
 ]
 
 [[package]]
 name = "pytz"
-version = "2025.2"
+version = "2026.1.post1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f8/bf/abbd3cdfb8fbc7fb3d4d38d320f2441b1e7cbe29be4f23797b4a2b5d8aac/pytz-2025.2.tar.gz", hash = "sha256:360b9e3dbb49a209c21ad61809c7fb453643e048b38924c765813546746e81c3", size = 320884, upload-time = "2025-03-25T02:25:00.538Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/56/db/b8721d71d945e6a8ac63c0fc900b2067181dbb50805958d4d4661cf7d277/pytz-2026.1.post1.tar.gz", hash = "sha256:3378dde6a0c3d26719182142c56e60c7f9af7e968076f31aae569d72a0358ee1", size = 321088, upload-time = "2026-03-03T07:47:50.683Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/81/c4/34e93fe5f5429d7570ec1fa436f1986fb1f00c3e0f43a589fe2bbcd22c3f/pytz-2025.2-py2.py3-none-any.whl", hash = "sha256:5ddf76296dd8c44c26eb8f4b6f35488f3ccbf6fbbd7adee0b7262d43f0ec2f00", size = 509225, upload-time = "2025-03-25T02:24:58.468Z" },
+    { url = "https://files.pythonhosted.org/packages/10/99/781fe0c827be2742bcc775efefccb3b048a3a9c6ce9aec0cbf4a101677e5/pytz-2026.1.post1-py2.py3-none-any.whl", hash = "sha256:f2fd16142fda348286a75e1a524be810bb05d444e5a081f37f7affc635035f7a", size = 510489, upload-time = "2026-03-03T07:47:49.167Z" },
 ]
 
 [[package]]

@@ -23,7 +23,26 @@ class DatasetProcessorError(Exception):
 
 
 class DatasetProcessor:
+    """
+    Class for processing trial information
+
+    Parses different streams to build a Site model representing a virtual site in the VR foraging task.
+    See the site class in the models module for more details.
+    """
     def __init__(self, dataset: contraqctor.contract.Dataset, root_path: Path, *, raise_on_error: bool = True) -> None:
+        """
+        Initialize the processor with a dataset and root path.
+
+        Parameters
+        ----------
+        dataset : contraqctor.contract.Dataset
+            The data contract dataset containing metadata and file references.
+        root_path : Path
+            Base directory used to resolve dataset file paths.
+        raise_on_error : bool, optional
+            If True, exceptions are raised when errors occur. If False, warnings
+            are logged and processing continues where possible. Defaults to True.
+        """
         self.dataset = dataset
         self.root_path = root_path
         self.raise_on_error = raise_on_error
@@ -82,34 +101,12 @@ class DatasetProcessor:
             f"Using version {str(dataset.version)} "
             "for parsing patch state rewards"
         )
-        base_version = Version(str(dataset.version)).base_version
-        if Version(base_version) >= Version("0.6.0"):
-            try:
-                patches_state_at_reward = dataset.at("Behavior").at("SoftwareEvents").at("PatchStateAtReward").load().data
-            except FileNotFoundError:
-                logger.info("Using GlobalPatchState for parsing patch state rewards")
-                try:
-                    patches_state_at_reward = dataset.at("Behavior").at("SoftwareEvents").at("GlobalPatchState").load().data
-                except KeyError as e:
-                    patches_state_at_reward = pd.read_json(root_path / "behavior" / "SoftwareEvents" / "GlobalPatchState.json", lines=True).set_index("timestamp")
-
-            expanded = pd.json_normalize(patches_state_at_reward["data"])
-            expanded.index = patches_state_at_reward.index
-            patches_state_at_reward = patches_state_at_reward.join(expanded)
-        elif Version(str(dataset.version)) >= Version("0.4.0"):
-            # referencing https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Analysis/blob/afebaba21b7d22dabfe3e20d116f3ee3e1d43131/src/aind_vr_foraging_analysis/utils/parsing/parse.py#L1408
-            reward_amount = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAmount").load().data
-            reward_available = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAvailable").load().data
-            reward_probability = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardProbability").load().data
-
-            patches_state_at_reward = pd.DataFrame()
-            patches_state_at_reward.index = reward_probability.index
-            patches_state_at_reward["Amount"] = reward_amount["data"].values
-            patches_state_at_reward["Probability"] = reward_probability["data"].values
-            patches_state_at_reward["Available"] = reward_available["data"].values
+        patches_state_at_reward = dataset.at("Behavior").at("SoftwareEvents").at("PatchStateAtReward").load().data
+        expanded = pd.json_normalize(patches_state_at_reward["data"])
+        expanded.index = patches_state_at_reward.index
+        patches_state_at_reward = patches_state_at_reward.join(expanded)
 
         return patches_state_at_reward
-
 
     @staticmethod
     def _parse_wait_reward_outcome(dataset: contraqctor.contract.Dataset) -> pd.Series:
@@ -238,10 +235,18 @@ class DatasetProcessor:
             this_patch = merged.iloc[i]["patch_data"]
 
             site_choice_feedback = slice_by_index(choice_feedback, this_timestamp, next_timestamp)
-            assert len(site_choice_feedback) <= 1, "Multiple speaker choices in site interval"
+            if self.raise_on_error:
+                assert len(site_choice_feedback) <= 1, "Multiple speaker choices in site interval"
+            else:
+                if len(site_choice_feedback) > 1:
+                    logger.warning("Multiple speaker choices in site interval... Defaulting to using first one")
 
             site_water_delivery = slice_by_index(water_delivery, this_timestamp, next_timestamp)
-            #assert len(site_water_delivery) <= 1, "Multiple water deliveries in site interval"
+            if self.raise_on_error:
+                assert len(site_water_delivery) <= 1, "Multiple water deliveries in site interval"
+            else:
+                if len(site_water_delivery) > 1:
+                    logger.warning("Multiple water deliviries in site interval... Defaulting to using first one")
 
             site_odor_onset = slice_by_index(odor_onset, this_timestamp, next_timestamp)
             
@@ -250,12 +255,15 @@ class DatasetProcessor:
                 current_friction = this_friction.values[-1]
 
             site_patch_state_at_reward = slice_by_index(patch_state_at_reward, this_timestamp, next_timestamp)
-            base_version = Version(str(dataset.version)).base_version
-            if Version(base_version) >= Version("0.6.0"):
-                site_patch_state_at_reward = site_patch_state_at_reward[
-                    site_patch_state_at_reward["PatchId"] == merged.iloc[i]["patch_index"]
-                ]
-            #assert len(site_patch_state_at_reward) <= 1, "Multiple patch states at reward in site interval"
+            site_patch_state_at_reward = site_patch_state_at_reward[
+                site_patch_state_at_reward["PatchId"] == merged.iloc[i]["patch_index"]
+            ]
+            
+            if self.raise_on_error:
+                assert len(site_patch_state_at_reward) <= 1, "Multiple patch states at reward in site interval"
+            else:
+                if len(site_patch_state_at_reward) > 1:
+                    logger.warning("Multiple patch states at reward site interval... Defaulting to using first one")
 
             ##
             this_block_idx = merged.iloc[i]["block_count"]
