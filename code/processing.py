@@ -1,3 +1,4 @@
+
 import json
 import logging
 import typing as t
@@ -82,12 +83,34 @@ class DatasetProcessor:
             f"Using version {str(dataset.version)} "
             "for parsing patch state rewards"
         )
-        patches_state_at_reward = dataset.at("Behavior").at("SoftwareEvents").at("PatchStateAtReward").load().data
-        expanded = pd.json_normalize(patches_state_at_reward["data"])
-        expanded.index = patches_state_at_reward.index
-        patches_state_at_reward = patches_state_at_reward.join(expanded)
+        base_version = Version(str(dataset.version)).base_version
+        if Version(base_version) >= Version("0.6.0"):
+            try:
+                patches_state_at_reward = dataset.at("Behavior").at("SoftwareEvents").at("PatchStateAtReward").load().data
+            except FileNotFoundError:
+                logger.info("Using GlobalPatchState for parsing patch state rewards")
+                try:
+                    patches_state_at_reward = dataset.at("Behavior").at("SoftwareEvents").at("GlobalPatchState").load().data
+                except KeyError as e:
+                    patches_state_at_reward = pd.read_json(root_path / "behavior" / "SoftwareEvents" / "GlobalPatchState.json", lines=True).set_index("timestamp")
+
+            expanded = pd.json_normalize(patches_state_at_reward["data"])
+            expanded.index = patches_state_at_reward.index
+            patches_state_at_reward = patches_state_at_reward.join(expanded)
+        elif Version(str(dataset.version)) >= Version("0.4.0"):
+            # referencing https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Analysis/blob/afebaba21b7d22dabfe3e20d116f3ee3e1d43131/src/aind_vr_foraging_analysis/utils/parsing/parse.py#L1408
+            reward_amount = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAmount").load().data
+            reward_available = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAvailable").load().data
+            reward_probability = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardProbability").load().data
+
+            patches_state_at_reward = pd.DataFrame()
+            patches_state_at_reward.index = reward_probability.index
+            patches_state_at_reward["Amount"] = reward_amount["data"].values
+            patches_state_at_reward["Probability"] = reward_probability["data"].values
+            patches_state_at_reward["Available"] = reward_available["data"].values
 
         return patches_state_at_reward
+
 
     @staticmethod
     def _parse_wait_reward_outcome(dataset: contraqctor.contract.Dataset) -> pd.Series:
