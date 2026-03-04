@@ -1,5 +1,8 @@
+import json
 import logging
 import typing as t
+from packaging.version import Version
+from pathlib import Path
 
 import aind_behavior_vr_foraging
 import contraqctor
@@ -20,8 +23,9 @@ class DatasetProcessorError(Exception):
 
 
 class DatasetProcessor:
-    def __init__(self, dataset: contraqctor.contract.Dataset, *, raise_on_error: bool = True) -> None:
+    def __init__(self, dataset: contraqctor.contract.Dataset, root_path: Path, *, raise_on_error: bool = True) -> None:
         self.dataset = dataset
+        self.root_path = root_path
         self.raise_on_error = raise_on_error
 
         if self.dataset_version != self.parser_version:
@@ -73,11 +77,37 @@ class DatasetProcessor:
         return patches_state
 
     @staticmethod
-    def _parse_patch_state_at_reward(dataset: contraqctor.contract.Dataset) -> pd.DataFrame:
-        patches_state_at_reward = dataset.at("Behavior").at("SoftwareEvents").at("PatchStateAtReward").load().data
-        expanded = pd.json_normalize(patches_state_at_reward["data"])
-        expanded.index = patches_state_at_reward.index
-        patches_state_at_reward = patches_state_at_reward.join(expanded)
+    def _parse_patch_state_at_reward(dataset: contraqctor.contract.Dataset, root_path: Path) -> pd.DataFrame:
+        logger.info(
+            f"Using version {str(dataset.version)} "
+            "for parsing patch state rewards"
+        )
+        base_version = Version(str(dataset.version)).base_version
+        if Version(base_version) >= Version("0.6.0"):
+            try:
+                patches_state_at_reward = dataset.at("Behavior").at("SoftwareEvents").at("PatchStateAtReward").load().data
+            except FileNotFoundError:
+                logger.info("Using GlobalPatchState for parsing patch state rewards")
+                try:
+                    patches_state_at_reward = dataset.at("Behavior").at("SoftwareEvents").at("GlobalPatchState").load().data
+                except KeyError as e:
+                    patches_state_at_reward = pd.read_json(root_path / "behavior" / "SoftwareEvents" / "GlobalPatchState.json", lines=True).set_index("timestamp")
+
+            expanded = pd.json_normalize(patches_state_at_reward["data"])
+            expanded.index = patches_state_at_reward.index
+            patches_state_at_reward = patches_state_at_reward.join(expanded)
+        elif Version(str(dataset.version)) >= Version("0.4.0"):
+            # referencing https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Analysis/blob/afebaba21b7d22dabfe3e20d116f3ee3e1d43131/src/aind_vr_foraging_analysis/utils/parsing/parse.py#L1408
+            reward_amount = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAmount").load().data
+            reward_available = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAvailable").load().data
+            reward_probability = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardProbability").load().data
+
+            patches_state_at_reward = pd.DataFrame()
+            patches_state_at_reward.index = reward_probability.index
+            patches_state_at_reward["Amount"] = reward_amount["data"].values
+            patches_state_at_reward["Probability"] = reward_probability["data"].values
+            patches_state_at_reward["Available"] = reward_available["data"].values
+
         return patches_state_at_reward
 
 
@@ -141,8 +171,15 @@ class DatasetProcessor:
         odor_sites = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("ActiveSite").load().data)
         patches = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("ActivePatch").load().data)
         patches["patch_count"] = range(len(patches))
-        blocks = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("Block").load().data)
-        blocks["block_count"] = range(len(blocks))
+
+        try:
+            blocks = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("Block").load().data)
+            blocks["block_count"] = range(len(blocks))
+        except KeyError:
+            logger.info("No block stream. Defaulting to using patches")
+            blocks = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("ActivePatch").load().data)
+            blocks["block_count"] = range(len(blocks))
+            
 
         # Merge nearest patch (backward in time)
         merged = pd.merge_asof(
@@ -168,7 +205,7 @@ class DatasetProcessor:
         water_delivery = self._parse_water_delivery(dataset)
         reward_metadata = self._parse_reward_metadata(dataset)
         odor_onset = self._parse_odor_onset(dataset)
-        patch_state_at_reward = self._parse_patch_state_at_reward(dataset)
+        patch_state_at_reward = self._parse_patch_state_at_reward(dataset, self.root_path)
         friction = self._parse_friction(dataset)
         olfactometer_channel_count = self.get_olfactometer_channel_count(dataset)
         wait_reward_outcome = self._parse_wait_reward_outcome(dataset)
@@ -213,10 +250,12 @@ class DatasetProcessor:
                 current_friction = this_friction.values[-1]
 
             site_patch_state_at_reward = slice_by_index(patch_state_at_reward, this_timestamp, next_timestamp)
-            site_patch_state_at_reward = site_patch_state_at_reward[
-                site_patch_state_at_reward["PatchId"] == merged.iloc[i]["patch_index"]
-            ]
-            assert len(site_patch_state_at_reward) <= 1, "Multiple patch states at reward in site interval"
+            base_version = Version(str(dataset.version)).base_version
+            if Version(base_version) >= Version("0.6.0"):
+                site_patch_state_at_reward = site_patch_state_at_reward[
+                    site_patch_state_at_reward["PatchId"] == merged.iloc[i]["patch_index"]
+                ]
+            #assert len(site_patch_state_at_reward) <= 1, "Multiple patch states at reward in site interval"
 
             ##
             this_block_idx = merged.iloc[i]["block_count"]
