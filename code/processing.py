@@ -238,10 +238,18 @@ class DatasetProcessor:
             this_patch = merged.iloc[i]["patch_data"]
 
             site_choice_feedback = slice_by_index(choice_feedback, this_timestamp, next_timestamp)
-            assert len(site_choice_feedback) <= 1, "Multiple speaker choices in site interval"
+            if self.raise_on_error:
+                assert len(site_choice_feedback) <= 1, "Multiple speaker choices in site interval"
+            else:
+                if len(site_choice_feedback) > 1:
+                    logger.warning("Multiple speaker choices in site interval... Defaulting to using first one")
 
             site_water_delivery = slice_by_index(water_delivery, this_timestamp, next_timestamp)
-            #assert len(site_water_delivery) <= 1, "Multiple water deliveries in site interval"
+            if self.raise_on_error:
+                assert len(site_water_delivery) <= 1, "Multiple water deliveries in site interval"
+            else:
+                if len(site_water_delivery) > 1:
+                    logger.warning("Multiple water deliviries in site interval... Defaulting to using first one")
 
             site_odor_onset = slice_by_index(odor_onset, this_timestamp, next_timestamp)
             
@@ -255,7 +263,12 @@ class DatasetProcessor:
                 site_patch_state_at_reward = site_patch_state_at_reward[
                     site_patch_state_at_reward["PatchId"] == merged.iloc[i]["patch_index"]
                 ]
-            #assert len(site_patch_state_at_reward) <= 1, "Multiple patch states at reward in site interval"
+            
+            if self.raise_on_error:
+                assert len(site_patch_state_at_reward) <= 1, "Multiple patch states at reward in site interval"
+            else:
+                if len(site_patch_state_at_reward) > 1:
+                    logger.warning("Multiple patch states at reward site interval... Defaulting to using first one")
 
             ##
             this_block_idx = merged.iloc[i]["block_count"]
