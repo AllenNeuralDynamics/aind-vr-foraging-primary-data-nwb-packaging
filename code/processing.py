@@ -23,6 +23,12 @@ class DatasetProcessorError(Exception):
 
 
 class DatasetProcessor:
+    """
+    Class for processing trial information
+
+    Parses different streams to build a Site model representing a virtual site in the VR foraging task.
+    See the site class in the models module for more details.
+    """
     def __init__(self, dataset: contraqctor.contract.Dataset, root_path: Path, *, raise_on_error: bool = True) -> None:
         self.dataset = dataset
         self.root_path = root_path
