@@ -30,6 +30,19 @@ class DatasetProcessor:
     See the site class in the models module for more details.
     """
     def __init__(self, dataset: contraqctor.contract.Dataset, root_path: Path, *, raise_on_error: bool = True) -> None:
+        """
+        Initialize the processor with a dataset and root path.
+
+        Parameters
+        ----------
+        dataset : contraqctor.contract.Dataset
+            The data contract dataset containing metadata and file references.
+        root_path : Path
+            Base directory used to resolve dataset file paths.
+        raise_on_error : bool, optional
+            If True, exceptions are raised when errors occur. If False, warnings
+            are logged and processing continues where possible. Defaults to True.
+        """
         self.dataset = dataset
         self.root_path = root_path
         self.raise_on_error = raise_on_error
