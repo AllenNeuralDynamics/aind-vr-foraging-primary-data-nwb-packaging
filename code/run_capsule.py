@@ -23,7 +23,7 @@ from processing import DatasetProcessor
 import utils
 
 logger = logging.getLogger(__name__)
-VERSION="7.0"
+VERSION="8.0"
 GITHUB_URL="https://github.com/AllenNeuralDynamics/aind-vr-foraging-primary-data-nwb-packaging.git"
 
 class VRForagingSettings(BaseSettings, cli_parse_args=True):
