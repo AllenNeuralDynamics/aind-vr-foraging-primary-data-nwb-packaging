@@ -236,11 +236,9 @@ class DatasetProcessor:
                 current_friction = this_friction.values[-1]
 
             site_patch_state_at_reward = slice_by_index(patch_state_at_reward, this_timestamp, next_timestamp)
-            base_version = Version(str(dataset.version)).base_version
-            if Version(base_version) >= Version("0.6.0"):
-                site_patch_state_at_reward = site_patch_state_at_reward[
-                    site_patch_state_at_reward["PatchId"] == merged.iloc[i]["patch_index"]
-                ]
+            site_patch_state_at_reward = site_patch_state_at_reward[
+                site_patch_state_at_reward["PatchId"] == merged.iloc[i]["patch_index"]
+            ]
             
             if self.raise_on_error:
                 assert len(site_patch_state_at_reward) <= 1, "Multiple patch states at reward in site interval"
