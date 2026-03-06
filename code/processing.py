@@ -360,7 +360,7 @@ class DatasetProcessor:
                 site_in_patch_index=current_site_in_patch_idx,
                 site_in_block_index=current_site_in_block_idx,
                 site_by_type_in_patch_index=site_by_type_in_patch_counter[this_site["label"]] - 1,  # zero indexed
-                odor_onset_time=odor_onset_time,
+                odor_onset_time=odor_onset_time if this_site["label"] == "RewardSite" else np.nan,
                 reward_onset_time=reward_onset_time,
                 reward_amount=np.nan
                 if site_patch_state_at_reward.empty
