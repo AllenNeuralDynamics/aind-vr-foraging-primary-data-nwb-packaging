@@ -102,12 +102,28 @@ class DatasetProcessor:
             reward_amount = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAmount").load().data
             reward_available = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAvailable").load().data
             reward_probability = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardProbability").load().data
-
+            
+            sample_triggers = DatasetProcessor._parse_reward_metadata(dataset)
+            
             patches_state_at_reward = pd.DataFrame()
             patches_state_at_reward.index = reward_probability.index
             patches_state_at_reward["Amount"] = reward_amount["data"].values
             patches_state_at_reward["Probability"] = reward_probability["data"].values
             patches_state_at_reward["Available"] = reward_available["data"].values
+        
+            sample_triggers = sample_triggers.sort_index()
+            patches_state_at_reward = patches_state_at_reward.sort_index()
+
+            # Perform merge_asof on the index
+            patches_state_at_reward = pd.merge_asof(
+                sample_triggers[[]],
+                patches_state_at_reward,
+                left_index=True,
+                right_index=True,
+                direction='backward'
+            )
+        
+            print(patches_state_at_reward)
 
         return patches_state_at_reward
 
@@ -123,7 +139,7 @@ class DatasetProcessor:
     def _parse_reward_metadata(dataset: contraqctor.contract.Dataset) -> pd.DataFrame:
         reward_metadata = dataset.at("Behavior").at("SoftwareEvents").at("GiveReward").load().data
         return reward_metadata
-
+    
     @staticmethod
     def _as_dict(d: contraqctor.contract.DataStream | PydanticModel | BaseModel | dict) -> dict:
         if isinstance(d, (PydanticModel, contraqctor.contract.DataStream)):
@@ -177,11 +193,10 @@ class DatasetProcessor:
             blocks = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("Block").load().data)
             blocks["block_count"] = range(len(blocks))
         except KeyError:
-            logger.info("No block stream. Defaulting to using patches")
+            logger.info("No block stream. Defaulting to single block")
             blocks = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("ActivePatch").load().data)
-            blocks["block_count"] = range(len(blocks))
+            blocks["block_count"] = 0  # all sites belong to block 0
             
-
         # Merge nearest patch (backward in time)
         merged = pd.merge_asof(
             odor_sites.sort_index(),
