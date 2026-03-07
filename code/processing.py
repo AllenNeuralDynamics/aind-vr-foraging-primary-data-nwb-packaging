@@ -103,7 +103,7 @@ class DatasetProcessor:
             reward_available = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAvailable").load().data
             reward_probability = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardProbability").load().data
             
-            sample_triggers = DatasetProcessor._parse_reward_metadata(dataset)
+            sample_triggers = DatasetProcessor._parse_wait_reward_outcome(dataset)
             
             patches_state_at_reward = pd.DataFrame()
             patches_state_at_reward.index = reward_probability.index
@@ -122,8 +122,6 @@ class DatasetProcessor:
                 right_index=True,
                 direction='backward'
             )
-        
-            print(patches_state_at_reward)
 
         return patches_state_at_reward
 
@@ -231,8 +229,8 @@ class DatasetProcessor:
         current_block_idx = 0
         current_patch_idx = 0
         current_patch_in_block_idx = 0  # Resets when block changes
-        current_site_in_patch_idx = 0  # Resets when patch changes
-        current_site_in_block_idx = 0  # Resets when block changes
+        current_site_in_patch_idx = -1  # Resets when patch changes
+        current_site_in_block_idx = -1 # Resets when block changes
         unique_site_labels = merged["data"].apply(lambda d: d["label"]).unique().tolist()
         site_by_type_in_patch_counter = dict.fromkeys(
             unique_site_labels, 0
@@ -389,7 +387,7 @@ class DatasetProcessor:
                 has_reward=np.isnan(reward_onset_time) == False,
                 choice_cue_time=choice_time,
                 has_choice=not site_choice_feedback.empty,
-                reward_delay_duration=reward_onset_time - odor_onset_time,
+                reward_delay_duration=reward_onset_time - choice_time,
                 has_waited_reward_delay=has_waited_reward_delay,
                 block_index=this_block_idx,
             )
