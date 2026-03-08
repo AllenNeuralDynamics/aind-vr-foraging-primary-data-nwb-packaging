@@ -235,7 +235,12 @@ class DatasetProcessor:
         site_by_type_in_patch_counter = dict.fromkeys(
             unique_site_labels, 0
         )  # initialize to 0, which means we subtract 1 later for 0-based indexing
-
+        site_by_type_in_block_counter = dict.fromkeys(
+            unique_site_labels, -1
+        )
+        site_by_type_idx = dict.fromkeys(
+            unique_site_labels, 0
+        )
         ##
 
         sites: list[Site] = []
@@ -291,7 +296,8 @@ class DatasetProcessor:
             # We always increment these eagerly
             current_site_in_patch_idx += 1
             current_site_in_block_idx += 1
-
+            site_by_type_in_block_counter[this_site["label"]] += 1
+            
             # If the patch changed, we reset the site_in_patch counter and increment the patch_in_block counter
             if this_patch_idx != current_patch_idx:
                 current_patch_idx = this_patch_idx
@@ -305,9 +311,11 @@ class DatasetProcessor:
                 current_block_idx = this_block_idx
                 current_patch_in_block_idx = 0
                 current_site_in_block_idx = 0
-
+                site_by_type_in_block_counter = dict.fromkeys(unique_site_labels, 0)
+                
             site_by_type_in_patch_counter[this_site["label"]] += 1
-
+            site_by_type_idx[this_site["label"]] += 1
+            
             choice_time = site_choice_feedback.index[0] if not site_choice_feedback.empty else np.nan
 
             if site_odor_onset.empty and this_site["odor_specification"] is not None:
@@ -372,7 +380,9 @@ class DatasetProcessor:
                 site_index=i,
                 site_in_patch_index=current_site_in_patch_idx,
                 site_in_block_index=current_site_in_block_idx,
-                site_by_type_in_patch_index=site_by_type_in_patch_counter[this_site["label"]] - 1,  # zero indexed
+                site_by_type_in_patch_index=site_by_type_in_patch_counter[this_site["label"]] - 1,  # zero indexed,
+                site_by_type_in_block_index=site_by_type_in_block_counter[this_site["label"]],  # zero indexed
+                site_by_type_index=site_by_type_idx[this_site["label"]] - 1,  # zero indexed
                 odor_onset_time=odor_onset_time if this_site["label"] == "RewardSite" else np.nan,
                 reward_onset_time=reward_onset_time,
                 reward_amount=np.nan

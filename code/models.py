@@ -26,6 +26,12 @@ class Site(BaseModel):
     site_by_type_in_patch_index: int = Field(
         description="Same as site_in_patch_index but only counting sites of the same type (e.g. RewardSite)"
     )
+    site_by_type_in_block_index: int = Field(
+        description="Same as site_in_block_index but only counting sites of the same type (e.g. RewardSite)"
+    )
+    site_by_type_index: int = Field(
+        description="Same as site_index but only counting sites of the same type (e.g. RewardSite)"
+    )
     odor_onset_time: Optional[float] = Field(
         None, description="Time of odor onset. Will be null if no odor was delivered. (unit: second)"
     )
