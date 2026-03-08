@@ -239,7 +239,7 @@ class DatasetProcessor:
             unique_site_labels, -1
         )
         site_by_type_idx = dict.fromkeys(
-            unique_site_labels, 0
+            unique_site_labels, -1
         )
         ##
 
@@ -268,7 +268,7 @@ class DatasetProcessor:
                 assert len(site_water_delivery) <= 1, "Multiple water deliveries in site interval"
             else:
                 if len(site_water_delivery) > 1:
-                    logger.warning("Multiple water deliviries in site interval... Defaulting to using first one")
+                    logger.warning("Multiple water deliveries in site interval... Defaulting to using first one")
 
             site_odor_onset = slice_by_index(odor_onset, this_timestamp, next_timestamp)
             
@@ -382,7 +382,7 @@ class DatasetProcessor:
                 site_in_block_index=current_site_in_block_idx,
                 site_by_type_in_patch_index=site_by_type_in_patch_counter[this_site["label"]] - 1,  # zero indexed,
                 site_by_type_in_block_index=site_by_type_in_block_counter[this_site["label"]],  # zero indexed
-                site_by_type_index=site_by_type_idx[this_site["label"]] - 1,  # zero indexed
+                site_by_type_index=site_by_type_idx[this_site["label"]],  # zero indexed
                 odor_onset_time=odor_onset_time if this_site["label"] == "RewardSite" else np.nan,
                 reward_onset_time=reward_onset_time,
                 reward_amount=np.nan
