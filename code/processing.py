@@ -102,12 +102,26 @@ class DatasetProcessor:
             reward_amount = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAmount").load().data
             reward_available = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAvailable").load().data
             reward_probability = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardProbability").load().data
-
+            
+            sample_triggers = DatasetProcessor._parse_wait_reward_outcome(dataset)
+            
             patches_state_at_reward = pd.DataFrame()
             patches_state_at_reward.index = reward_probability.index
             patches_state_at_reward["Amount"] = reward_amount["data"].values
             patches_state_at_reward["Probability"] = reward_probability["data"].values
             patches_state_at_reward["Available"] = reward_available["data"].values
+        
+            sample_triggers = sample_triggers.sort_index()
+            patches_state_at_reward = patches_state_at_reward.sort_index()
+
+            # Perform merge_asof on the index
+            patches_state_at_reward = pd.merge_asof(
+                sample_triggers[[]],
+                patches_state_at_reward,
+                left_index=True,
+                right_index=True,
+                direction='backward'
+            )
 
         return patches_state_at_reward
 
@@ -123,7 +137,7 @@ class DatasetProcessor:
     def _parse_reward_metadata(dataset: contraqctor.contract.Dataset) -> pd.DataFrame:
         reward_metadata = dataset.at("Behavior").at("SoftwareEvents").at("GiveReward").load().data
         return reward_metadata
-
+    
     @staticmethod
     def _as_dict(d: contraqctor.contract.DataStream | PydanticModel | BaseModel | dict) -> dict:
         if isinstance(d, (PydanticModel, contraqctor.contract.DataStream)):
@@ -177,11 +191,10 @@ class DatasetProcessor:
             blocks = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("Block").load().data)
             blocks["block_count"] = range(len(blocks))
         except KeyError:
-            logger.info("No block stream. Defaulting to using patches")
+            logger.info("No block stream. Defaulting to single block")
             blocks = t.cast(pd.DataFrame, dataset.at("Behavior").at("SoftwareEvents").at("ActivePatch").load().data)
-            blocks["block_count"] = range(len(blocks))
+            blocks["block_count"] = 0  # all sites belong to block 0
             
-
         # Merge nearest patch (backward in time)
         merged = pd.merge_asof(
             odor_sites.sort_index(),
@@ -216,13 +229,18 @@ class DatasetProcessor:
         current_block_idx = 0
         current_patch_idx = 0
         current_patch_in_block_idx = 0  # Resets when block changes
-        current_site_in_patch_idx = 0  # Resets when patch changes
-        current_site_in_block_idx = 0  # Resets when block changes
+        current_site_in_patch_idx = -1  # Resets when patch changes
+        current_site_in_block_idx = -1 # Resets when block changes
         unique_site_labels = merged["data"].apply(lambda d: d["label"]).unique().tolist()
         site_by_type_in_patch_counter = dict.fromkeys(
             unique_site_labels, 0
         )  # initialize to 0, which means we subtract 1 later for 0-based indexing
-
+        site_by_type_in_block_counter = dict.fromkeys(
+            unique_site_labels, -1
+        )
+        site_by_type_idx = dict.fromkeys(
+            unique_site_labels, -1
+        )
         ##
 
         sites: list[Site] = []
@@ -250,7 +268,7 @@ class DatasetProcessor:
                 assert len(site_water_delivery) <= 1, "Multiple water deliveries in site interval"
             else:
                 if len(site_water_delivery) > 1:
-                    logger.warning("Multiple water deliviries in site interval... Defaulting to using first one")
+                    logger.warning("Multiple water deliveries in site interval... Defaulting to using first one")
 
             site_odor_onset = slice_by_index(odor_onset, this_timestamp, next_timestamp)
             
@@ -278,7 +296,8 @@ class DatasetProcessor:
             # We always increment these eagerly
             current_site_in_patch_idx += 1
             current_site_in_block_idx += 1
-
+            site_by_type_in_block_counter[this_site["label"]] += 1
+            
             # If the patch changed, we reset the site_in_patch counter and increment the patch_in_block counter
             if this_patch_idx != current_patch_idx:
                 current_patch_idx = this_patch_idx
@@ -292,9 +311,11 @@ class DatasetProcessor:
                 current_block_idx = this_block_idx
                 current_patch_in_block_idx = 0
                 current_site_in_block_idx = 0
-
+                site_by_type_in_block_counter = dict.fromkeys(unique_site_labels, 0)
+                
             site_by_type_in_patch_counter[this_site["label"]] += 1
-
+            site_by_type_idx[this_site["label"]] += 1
+            
             choice_time = site_choice_feedback.index[0] if not site_choice_feedback.empty else np.nan
 
             if site_odor_onset.empty and this_site["odor_specification"] is not None:
@@ -359,7 +380,9 @@ class DatasetProcessor:
                 site_index=i,
                 site_in_patch_index=current_site_in_patch_idx,
                 site_in_block_index=current_site_in_block_idx,
-                site_by_type_in_patch_index=site_by_type_in_patch_counter[this_site["label"]] - 1,  # zero indexed
+                site_by_type_in_patch_index=site_by_type_in_patch_counter[this_site["label"]] - 1,  # zero indexed,
+                site_by_type_in_block_index=site_by_type_in_block_counter[this_site["label"]],  # zero indexed
+                site_by_type_index=site_by_type_idx[this_site["label"]],  # zero indexed
                 odor_onset_time=odor_onset_time if this_site["label"] == "RewardSite" else np.nan,
                 reward_onset_time=reward_onset_time,
                 reward_amount=np.nan
@@ -374,7 +397,7 @@ class DatasetProcessor:
                 has_reward=np.isnan(reward_onset_time) == False,
                 choice_cue_time=choice_time,
                 has_choice=not site_choice_feedback.empty,
-                reward_delay_duration=reward_onset_time - odor_onset_time,
+                reward_delay_duration=reward_onset_time - choice_time,
                 has_waited_reward_delay=has_waited_reward_delay,
                 block_index=this_block_idx,
             )
