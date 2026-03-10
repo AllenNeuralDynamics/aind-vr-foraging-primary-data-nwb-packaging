@@ -51,7 +51,10 @@ class DatasetProcessor:
     @staticmethod
     def _parse_speaker_choice_feedback(dataset: contraqctor.contract.Dataset) -> pd.DataFrame:
         speaker_choice = dataset.at("Behavior").at("HarpBehavior").load().at("PwmStart").load().data
-        speaker_choice = speaker_choice[(speaker_choice["MessageType"] == "WRITE") & (speaker_choice["PwmDO2"])]
+        if Version(str(dataset.version)) >= Version("0.4.0"):
+            speaker_choice = speaker_choice[(speaker_choice["MessageType"] == "WRITE") & (speaker_choice["PwmDO2"])]
+        elif Version(str(dataset.version)) <= Version("0.3.0"):
+            speaker_choice = speaker_choice[(speaker_choice["MessageType"] == "WRITE") & (speaker_choice["PwmDO1"])]
         return speaker_choice
 
     @staticmethod
@@ -97,7 +100,7 @@ class DatasetProcessor:
             expanded = pd.json_normalize(patches_state_at_reward["data"])
             expanded.index = patches_state_at_reward.index
             patches_state_at_reward = patches_state_at_reward.join(expanded)
-        elif Version(str(dataset.version)) >= Version("0.4.0"):
+        elif Version(str(dataset.version)) >= Version("0.3.0"):
             # referencing https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Analysis/blob/afebaba21b7d22dabfe3e20d116f3ee3e1d43131/src/aind_vr_foraging_analysis/utils/parsing/parse.py#L1408
             reward_amount = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAmount").load().data
             reward_available = dataset.at("Behavior").at("SoftwareEvents").at("PatchRewardAvailable").load().data
@@ -151,8 +154,11 @@ class DatasetProcessor:
 
     @staticmethod
     def _parse_friction(dataset: contraqctor.contract.Dataset) -> pd.DataFrame:
-        d = dataset.at("Behavior").at("HarpTreadmill").at("BrakeCurrentSetPoint").load().data
-        return d.loc[d["MessageType"] == "WRITE", "BrakeCurrentSetPoint"]
+        if Version(str(dataset.version)) <= Version("0.3.0"):
+            return pd.DataFrame()
+        else:
+            d = dataset.at("Behavior").at("HarpTreadmill").at("BrakeCurrentSetPoint").load().data
+            return d.loc[d["MessageType"] == "WRITE", "BrakeCurrentSetPoint"]
 
     def get_olfactometer_channel_count(self, dataset: contraqctor.contract.Dataset) -> int:
         if self.dataset_version < semver.Version.parse("0.7.0"):
