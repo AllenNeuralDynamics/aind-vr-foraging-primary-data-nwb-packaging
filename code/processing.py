@@ -86,7 +86,7 @@ class DatasetProcessor:
             treadmill_calibration.get("invert_direction")
             or treadmill_calibration.get("invertDirection", False)
         )
-
+        print(wheel_size, PPR, invert_direction)
         return wheel_size, PPR, invert_direction
 
 
@@ -102,15 +102,22 @@ class DatasetProcessor:
             rig_settings = rig_settings.model_dump() if isinstance(rig_settings, BaseModel) else rig_settings
 
             wheel_size, PPR, invert_direction = self._get_treadmill_calibration(rig_settings)
-            converter = wheel_size * np.pi / PPR * (-1 if invert_direction else 1)
-
             sensor_data["Encoder"] = sensor_data["Encoder"].diff()
+            dispatch = 250
+            
         else:
-            # TODO?
-            pass
-
+            logger.info("Parsing velocity with version < 0.3.0")
+            sensor_data = dataset.at("Behavior").at("HarpBehavior").at("AnalogData").load().data
+            rig_settings = dataset.at("Behavior").at("InputSchemas").at("Rig").load().data
+            rig_settings = rig_settings.model_dump() if isinstance(rig_settings, BaseModel) else rig_settings
+            
+            wheel_size, PPR, invert_direction = self._get_treadmill_calibration(rig_settings)
+            dispatch = 1000
+        
+        converter = wheel_size * np.pi / PPR * (-1 if invert_direction else 1)
+        
         if parser == "filter":
-            sensor_data["velocity"] = sensor_data["Encoder"] * converter * 250
+            sensor_data["velocity"] = sensor_data["Encoder"] * converter * dispatch
             sensor_data["distance"] = sensor_data["Encoder"] * converter
             sensor_data = fir_filter(sensor_data, "velocity", 50)
             encoder = sensor_data[["filtered_velocity"]]
@@ -127,6 +134,22 @@ class DatasetProcessor:
             raise ValueError(f"Unknown parser: {parser!r}. Expected 'filter' or 'resampling'.")
         
         return encoder
+
+    def get_sniffing(self) -> pd.Series:
+        sniffing = (
+            self.dataset.at("Behavior")
+            .at("HarpSniffDetector")
+            .at("RawVoltage")
+            .load()
+            .data["RawVoltage"]
+            .rename("signal")
+        )
+        return sniffing
+    
+    
+    def get_licks(self) -> pd.Series:
+        licks = self.dataset.at("Behavior").at("HarpLickometer").at("LickState").load().data
+        return licks.loc[licks["Channel0"] == True, "Channel0"].rename("licks")
 
     @property
     def dataset_version(self) -> semver.Version:
