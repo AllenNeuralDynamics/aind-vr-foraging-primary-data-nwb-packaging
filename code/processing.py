@@ -12,6 +12,7 @@ import pandas as pd
 import semver
 from contraqctor.contract.json import PydanticModel
 from pydantic import BaseModel
+from scipy.signal import firwin, filtfilt
 
 from models import Site
 from helper import slice_by_index
@@ -23,8 +24,38 @@ class DatasetProcessorError(Exception):
     pass
 
 
+def fir_filter(data, col, cutoff_hz, num_taps=61, nyq_rate=1000 / 2.0):
+    """
+    Create a FIR filter and apply it to signal.
+
+    nyq_rate (int) = The Nyquist rate of the signal.
+    cutoff_hz (float) = The cutoff frequency of the filter: 5KHz
+    numtaps (int) = Length of the filter (number of coefficients, i.e. the filter order + 1)
+    """
+
+    # Use firwin to create a lowpass FIR filter
+    fir_coeff = firwin(num_taps, cutoff_hz / nyq_rate)
+
+    # Use lfilter to filter the signal with the FIR filter
+    data['filtered_' + col] = filtfilt(fir_coeff, 1.0, data[col].values)
+
+    return data
+
 class DatasetProcessor:
     def __init__(self, dataset: contraqctor.contract.Dataset, root_path: Path, *, raise_on_error: bool = True) -> None:
+        """
+        Initialize the processor with a dataset and root path.
+
+        Parameters
+        ----------
+        dataset : contraqctor.contract.Dataset
+            The data contract dataset containing metadata and file references.
+        root_path : Path
+            Base directory used to resolve dataset file paths.
+        raise_on_error : bool, optional
+            If True, exceptions are raised when errors occur. If False, warnings
+            are logged and processing continues where possible. Defaults to True.
+        """
         self.dataset = dataset
         self.root_path = root_path
         self.raise_on_error = raise_on_error
@@ -33,6 +64,92 @@ class DatasetProcessor:
             logger.warning(
                 "Dataset version %s does not match parser version %s", self.dataset_version, self.parser_version
             )
+
+    def _get_treadmill_calibration(self, rig_settings: dict) -> tuple[float, float, bool]:
+        """Extract wheel_size, PPR, invert_direction from rig settings, handling legacy key schemas."""
+        treadmill_calibration = (
+            rig_settings.get("harp_treadmill", {}).get("calibration", {}).get("output")
+            or rig_settings.get("harp_treadmill", {}).get("calibration")
+            or rig_settings.get("treadmill", {}).get("settings")
+            or rig_settings.get("treadmill", {})
+        )
+
+        wheel_size = (
+            treadmill_calibration.get("wheel_diameter")
+            or treadmill_calibration.get("wheelDiameter")
+        )
+        PPR = (
+            treadmill_calibration.get("pulses_per_revolution")
+            or treadmill_calibration.get("pulsesPerRevolution")
+        )
+        invert_direction = (
+            treadmill_calibration.get("invert_direction")
+            or treadmill_calibration.get("invertDirection", False)
+        )
+        print(wheel_size, PPR, invert_direction)
+        return wheel_size, PPR, invert_direction
+
+
+    def get_velocity(self, parser: str = "filter") -> pd.DataFrame:
+        # Referencing https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Analysis/blob/f558b9e05018922213bb17d6fef7f6e4210b9e97/src/aind_vr_foraging_analysis/utils/parsing/parse.py#L188
+        dataset = self.dataset
+        base_version = Version(str(self.dataset_version)).base_version
+
+        if Version(base_version) >= Version("0.4.0"):
+            logger.info("Parsing velocity with version >= 0.4.0")
+            sensor_data = dataset.at("Behavior").at("HarpTreadmill").at("SensorData").load().data
+            rig_settings = dataset.at("Behavior").at("InputSchemas").at("Rig").load().data
+            rig_settings = rig_settings.model_dump() if isinstance(rig_settings, BaseModel) else rig_settings
+
+            wheel_size, PPR, invert_direction = self._get_treadmill_calibration(rig_settings)
+            sensor_data["Encoder"] = sensor_data["Encoder"].diff()
+            dispatch = 250
+            
+        else:
+            logger.info("Parsing velocity with version < 0.3.0")
+            sensor_data = dataset.at("Behavior").at("HarpBehavior").at("AnalogData").load().data
+            rig_settings = dataset.at("Behavior").at("InputSchemas").at("Rig").load().data
+            rig_settings = rig_settings.model_dump() if isinstance(rig_settings, BaseModel) else rig_settings
+            
+            wheel_size, PPR, invert_direction = self._get_treadmill_calibration(rig_settings)
+            dispatch = 1000
+        
+        converter = wheel_size * np.pi / PPR * (-1 if invert_direction else 1)
+        
+        if parser == "filter":
+            sensor_data["velocity"] = sensor_data["Encoder"] * converter * dispatch
+            sensor_data["distance"] = sensor_data["Encoder"] * converter
+            sensor_data = fir_filter(sensor_data, "velocity", 50)
+            encoder = sensor_data[["filtered_velocity"]]
+
+        elif parser == "resampling":
+            encoder = sensor_data["Encoder"].apply(lambda x: x * converter)
+            encoder.index = pd.to_datetime(encoder.index, unit="s")
+            encoder = encoder.resample("33ms").sum().interpolate(method="linear") / 0.033
+            encoder.index = encoder.index - pd.to_datetime(0)
+            encoder.index = encoder.index.total_seconds()
+            encoder = encoder.to_frame()
+            encoder.rename(columns={"Encoder": "filtered_velocity"}, inplace=True)
+        else:
+            raise ValueError(f"Unknown parser: {parser!r}. Expected 'filter' or 'resampling'.")
+        
+        return encoder
+
+    def get_sniffing(self) -> pd.Series:
+        sniffing = (
+            self.dataset.at("Behavior")
+            .at("HarpSniffDetector")
+            .at("RawVoltage")
+            .load()
+            .data["RawVoltage"]
+            .rename("signal")
+        )
+        return sniffing
+    
+    
+    def get_licks(self) -> pd.Series:
+        licks = self.dataset.at("Behavior").at("HarpLickometer").at("LickState").load().data
+        return licks.loc[licks["Channel0"] == True, "Channel0"].rename("licks")
 
     @property
     def dataset_version(self) -> semver.Version:

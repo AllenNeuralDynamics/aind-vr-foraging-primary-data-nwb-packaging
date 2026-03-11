@@ -16,6 +16,8 @@ from ndx_events import NdxEventsNWBFile
 from pydantic import Field
 from pydantic_core import ValidationError
 from pydantic_settings import BaseSettings
+from pynwb import TimeSeries
+from pynwb.base import ProcessingModule
 
 from models import Site
 from processing import DatasetProcessor
@@ -106,6 +108,7 @@ if __name__ == "__main__":
     processor = DatasetProcessor(vr_foraging_dataset, primary_data_path[0], raise_on_error=False)
     processed_sites = processor.process()
 
+
     #nwb_file = create_base_nwb_file(primary_data_path[0])
     nwb_file = NdxEventsNWBFile(
         session_id="test_trials",
@@ -113,6 +116,36 @@ if __name__ == "__main__":
         session_start_time=datetime.now(),
         identifier="A beautiful test"
     )
+    processing_module = nwb_file.create_processing_module(
+        name="Behavior_processed", description="Processed TimeSeries Data"
+    )
+    
+    filtered_velocity = processor.get_velocity()
+    velocity_series = TimeSeries(
+        name="Velocity",
+        data=filtered_velocity["filtered_velocity"].values,
+        unit="cm/s",
+        timestamps=filtered_velocity.index.values,
+    )
+    processing_module.add(velocity_series)
+    
+    sniffing = processor.get_sniffing()
+    sniffing_series = TimeSeries(
+        name="Sniffing",
+        data=sniffing.values,
+        unit="V",
+        timestamps=sniffing.index.values,
+    )
+    processing_module.add(sniffing_series)
+    
+    licks = processor.get_licks()
+    lick_series = TimeSeries(
+        name="Licks",
+        data=licks.values,
+        unit="V",
+        timestamps=licks.index.values,
+    )
+    processing_module.add(lick_series)
     # for stream in streams:
     #     if stream.is_collection:  # only process leaf nodes into nwb
     #         continue
