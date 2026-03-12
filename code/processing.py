@@ -86,7 +86,6 @@ class DatasetProcessor:
             treadmill_calibration.get("invert_direction")
             or treadmill_calibration.get("invertDirection", False)
         )
-        print(wheel_size, PPR, invert_direction)
         return wheel_size, PPR, invert_direction
 
 
