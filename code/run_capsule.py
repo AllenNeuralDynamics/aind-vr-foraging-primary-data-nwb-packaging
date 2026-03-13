@@ -104,9 +104,12 @@ if __name__ == "__main__":
         from v0_3_0 import dataset
     else:
         from aind_behavior_vr_foraging.data_contract import dataset
-        
+    
+    logger.info(
+        f"Running contract version: {contract_version}"
+    )
     vr_foraging_dataset = dataset(
-        primary_data_path, version=contract_version
+        primary_data_path[0], version=contract_version
     )
     
     # exec = vr_foraging_dataset["Behavior"].load_all()  # load tree structure
