@@ -5,7 +5,6 @@ from pathlib import Path
 
 import contraqctor.contract as data_contract
 import pynwb
-from aind_behavior_vr_foraging.data_contract import dataset
 from aind_data_schema.components.identifiers import Code
 from aind_data_schema.core.processing import DataProcess, ProcessStage
 from aind_data_schema_models.process_names import ProcessName
@@ -96,12 +95,23 @@ if __name__ == "__main__":
     with open(task_input_logic_path, "r") as f:
         task_input_logic = json.load(f)
 
-    contract_version = task_input_logic["version"]
-    logger.info(f"Using data contract version {contract_version}")
-  
+    try:
+        contract_version = task_input_logic["version"]
+    except KeyError:
+        contract_version = task_input_logic["schema_version"]    
+
+    if contract_version == "0.3.0":
+        from v0_3_0 import dataset
+    else:
+        from aind_behavior_vr_foraging.data_contract import dataset
+    
+    logger.info(
+        f"Running contract version: {contract_version}"
+    )
     vr_foraging_dataset = dataset(
         primary_data_path[0], version=contract_version
     )
+    
     # exec = vr_foraging_dataset["Behavior"].load_all()  # load tree structure
     # streams = tuple(vr_foraging_dataset.iter_all())
  
@@ -117,7 +127,7 @@ if __name__ == "__main__":
         identifier="A beautiful test"
     )
     processing_module = nwb_file.create_processing_module(
-        name="Behavior_processed", description="Processed TimeSeries Data"
+        name="Behavior", description="Behavior Data - Velocity, Sniffing, and Licks"
     )
     
     filtered_velocity = processor.get_velocity()
