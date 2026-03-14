@@ -127,7 +127,7 @@ if __name__ == "__main__":
         identifier="A beautiful test"
     )
     processing_module = nwb_file.create_processing_module(
-        name="Behavior_processed", description="Processed TimeSeries Data"
+        name="Behavior", description="Behavior Data - Velocity, Sniffing, and Licks"
     )
     
     filtered_velocity = processor.get_velocity()
