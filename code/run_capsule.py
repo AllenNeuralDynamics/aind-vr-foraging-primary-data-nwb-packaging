@@ -4,7 +4,10 @@ from datetime import datetime
 from pathlib import Path
 
 import contraqctor.contract as data_contract
+from contraqctor.contract.base import DataStream
 import pynwb
+
+from aind_data_access_api.document_db import MetadataDbClient
 from aind_data_schema.components.identifiers import Code
 from aind_data_schema.core.processing import DataProcess, ProcessStage
 from aind_data_schema_models.process_names import ProcessName
@@ -24,8 +27,39 @@ from processing import DatasetProcessor
 import utils
 
 logger = logging.getLogger(__name__)
+API_GATEWAY_HOST = "api.allenneuraldynamics.org"
 VERSION="8.0"
 GITHUB_URL="https://github.com/AllenNeuralDynamics/aind-vr-foraging-primary-data-nwb-packaging.git"
+
+import json
+from pathlib import Path
+
+
+def write_ancillary_metadata(response: dict, path: str | Path) -> None:
+    """
+    Writes ancillary metadata from a response dict to a specified directory.
+    Each key is written as its own JSON file.
+
+    Parameters
+    ----------
+    response : dict
+        Dictionary containing the keys: acquisition, data_description,
+        procedures, instrument, and subject.
+    path : str or Path
+        Directory where the JSON files will be written.
+    """
+    keys = ["acquisition", "data_description", "procedures", "instrument", "subject"]
+    output_path = Path(path)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    for key in keys:
+        if key not in response:
+            print(f"Warning: '{key}' not found in response, skipping.")
+            continue
+
+        file_path = output_path / f"{key}.json"
+        with open(file_path, "w") as f:
+            json.dump(response[key], f, indent=4)
 
 class VRForagingSettings(BaseSettings, cli_parse_args=True):
     """
@@ -45,6 +79,12 @@ if __name__ == "__main__":
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
 
+    docdb_api_client = MetadataDbClient(
+        host=API_GATEWAY_HOST,
+        version="v2"
+    )
+
+
     settings = VRForagingSettings()
     start_process_time = datetime.now()
 
@@ -61,27 +101,19 @@ if __name__ == "__main__":
     data_description_json_path = tuple(
         settings.input_directory.glob("*/data_description.json")
     )
-    # subject_json_path = tuple(settings.input_directory.glob("*/subject.json"))
-    # if not acquisition_json_path:
-    #     raise FileNotFoundError("Primary data asset has no acquisition json file")
-    # if not data_description_json_path:
-    #     raise FileNotFoundError(
-    #         "Primary data asset has no data description json"
-    #     )
-
-    # if not subject_json_path:
-    #     raise FileNotFoundError("Primary data asset has no subject json")
-
-    # with open(acquisition_json_path[0], "r") as f:
-    #     acquisition_json = json.load(f)
     with open(data_description_json_path[0], "r") as f:
         data_description_json = json.load(f)
-    # with open(subject_json_path[0], "r") as f:
-    #     subject_json = json.load(f)
+
     logger.info(
         f"Found primary data {data_description_json['name']}. \
         Starting acquisition nwb packaging now"
     )
+
+    response = docdb_api_client.retrieve_docdb_records(
+        filter_query={"data_description.name": data_description_json["name"]}
+    )[0]
+
+    write_ancillary_metadata(response, settings.output_directory)
 
     # pull version from here - file always assumed to exist at that path
     task_input_logic_path = (
@@ -111,7 +143,7 @@ if __name__ == "__main__":
     vr_foraging_dataset = dataset(
         primary_data_path[0], version=contract_version
     )
-    
+
     # exec = vr_foraging_dataset["Behavior"].load_all()  # load tree structure
     # streams = tuple(vr_foraging_dataset.iter_all())
  
@@ -119,13 +151,7 @@ if __name__ == "__main__":
     processed_sites = processor.process()
 
 
-    #nwb_file = create_base_nwb_file(primary_data_path[0])
-    nwb_file = NdxEventsNWBFile(
-        session_id="test_trials",
-        session_description=f"Version {contract_version}",
-        session_start_time=datetime.now(),
-        identifier="A beautiful test"
-    )
+    nwb_file = create_base_nwb_file(primary_data_path[0])
     processing_module = nwb_file.create_processing_module(
         name="Behavior", description="Behavior Data - Velocity, Sniffing, and Licks"
     )
