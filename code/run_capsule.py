@@ -258,13 +258,13 @@ if __name__ == "__main__":
         end_date_time=end_process_time,
         stage=ProcessStage.PROCESSING,
         process_type=ProcessName.PIPELINE,
-        experimenters=["Arjun Sridhar"],
+        experimenters=["Tiffany Ona", "Bruno Cruz", "Arjun Sridhar"],
         code=Code(
             url=GITHUB_URL,
-            version=VERSION
+            version="4000526a3fb5844208e873ae4647d7bab76da0fd"
         ),
         output_parameters={},
-        notes=f"Run with data contract version: {contract_version}"
+        notes=f"Run with data contract version: {contract_version}. For manuscript, run with commit hash for one-off processing"
     )
     with open(settings.output_directory / "data_process.json", "w") as f:
         f.write(data_process.model_dump_json(indent=4))
