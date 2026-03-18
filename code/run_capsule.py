@@ -35,32 +35,6 @@ import json
 from pathlib import Path
 
 
-def write_ancillary_metadata(response: dict, path: str | Path) -> None:
-    """
-    Writes ancillary metadata from a response dict to a specified directory.
-    Each key is written as its own JSON file.
-
-    Parameters
-    ----------
-    response : dict
-        Dictionary containing the keys: acquisition, data_description,
-        procedures, instrument, and subject.
-    path : str or Path
-        Directory where the JSON files will be written.
-    """
-    keys = ["acquisition", "data_description", "procedures", "instrument", "subject"]
-    output_path = Path(path)
-    output_path.mkdir(parents=True, exist_ok=True)
-
-    for key in keys:
-        if key not in response:
-            print(f"Warning: '{key}' not found in response, skipping.")
-            continue
-
-        file_path = output_path / f"{key}.json"
-        with open(file_path, "w") as f:
-            json.dump(response[key], f, indent=4)
-
 class VRForagingSettings(BaseSettings, cli_parse_args=True):
     """
     Settings for VR Foraging Primary Data NWB Packaging
@@ -108,12 +82,6 @@ if __name__ == "__main__":
         f"Found primary data {data_description_json['name']}. \
         Starting acquisition nwb packaging now"
     )
-
-    response = docdb_api_client.retrieve_docdb_records(
-        filter_query={"data_description.name": data_description_json["name"]}
-    )[0]
-
-    write_ancillary_metadata(response, settings.output_directory)
 
     # pull version from here - file always assumed to exist at that path
     task_input_logic_path = (
