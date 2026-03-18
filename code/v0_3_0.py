@@ -104,15 +104,15 @@ def dataset(
                             ),
                         ),
                     ),
-                    HarpDevice(
-                        name="HarpClockGenerator",
-                        reader_params=HarpDevice.make_params(
-                            path=root_path / "behavior/ClockGenerator.harp",
-                            device_yml_hint=DeviceYmlByUrl(
-                                url="https://github.com/harp-tech/device.timestampgeneratorgen3/blob/8ea487d68d8efaf97fcbd1579efc124ac68559e2/device.yml",
-                            ),
-                        ),
-                    ),
+                    # HarpDevice(
+                    #     name="HarpClockGenerator",
+                    #     reader_params=HarpDevice.make_params(
+                    #         path=root_path / "behavior/ClockGenerator.harp",
+                    #         device_yml_hint=DeviceYmlByUrl(
+                    #             url="https://github.com/harp-tech/device.timestampgeneratorgen3/blob/8ea487d68d8efaf97fcbd1579efc124ac68559e2/device.yml",
+                    #         ),
+                    #     ),
+                    # ),
                     DataStreamCollection(
                         name="HarpCommands",
                         description="Commands sent to Harp devices",
@@ -153,15 +153,15 @@ def dataset(
                                     ),
                                 ),
                             ),
-                            HarpDevice(
-                                name="HarpClockGenerator",
-                                reader_params=HarpDevice.make_params(
-                                    path=root_path / "behavior/HarpCommands/ClockGenerator.harp",
-                                    device_yml_hint=DeviceYmlByUrl(
-                                        url="https://github.com/harp-tech/device.timestampgeneratorgen3/blob/8ea487d68d8efaf97fcbd1579efc124ac68559e2/device.yml"
-                                    ),
-                                ),
-                            ),
+                            # HarpDevice(
+                            #     name="HarpClockGenerator",
+                            #     reader_params=HarpDevice.make_params(
+                            #         path=root_path / "behavior/HarpCommands/ClockGenerator.harp",
+                            #         device_yml_hint=DeviceYmlByUrl(
+                            #             url="https://github.com/harp-tech/device.timestampgeneratorgen3/blob/8ea487d68d8efaf97fcbd1579efc124ac68559e2/device.yml"
+                            #         ),
+                            #     ),
+                            # ),
                         ],
                     ),
                     DataStreamCollection(
