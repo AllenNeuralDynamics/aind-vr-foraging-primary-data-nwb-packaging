@@ -1,0 +1,74 @@
+{
+  "event_type": {
+    "Description": "Type of behavioral event in the virtual foraging task",
+    "Levels": {
+      "reward_site_enter": "The time when the mouse enters a virtual location where rewards are potentially available.",
+      "reward_site_exit": "The time when the mouse exits a virtual location where rewards are potentially available.",
+      "odor_onset": "The onset of the odor that is presented for every reward site.",
+      "odor_offset": "The offset of the odor that is presented for every reward site.",
+      "reward": "Water reward that motivates mice to run down the virtual environment.",
+      "lick": "Time when mouse licks the lick spout.",
+      "tone": "Auditory cue that indicates to the mouse that it has fulfilled the stop criteria to collect potential rewards.",
+      "patch_enter": "Time when the mouse enters the virtual location of a new patch.",
+      "patch_exit": "Time when the mouse exits the virtual location of a new patch.",
+      "block_onset": "Time block when experimental statistics in the session is changed.",
+      "block_offset": "The offset of the time block when experimental statistics in the session were changed.",
+      "inter_site_enter": "Time when the mouse enters the virtual location of an inter-site (between reward sites).",
+      "inter_site_exit": "Time when the mouse exits the virtual location of an inter-site (between reward sites).",
+      "inter_patch_enter": "Time when the mouse enters the virtual location of an inter-patch (between patches).",
+      "inter_patch_exit": "Time when the mouse exits the virtual location of an inter-patch (between patches).",
+      "reward_probability": "The probability of reward when the reward curve is sampled by the task logic (mouse stops, waits, etc.) to decide whether a reward will be delivered or not.",
+      "stop_onset": "When the velocity of the mouse slows to the stop threshold of velocity.",
+      "stop_offset": "When the velocity of the mouse exceeds the stop threshold."
+    },
+    "HED": {
+      "reward_site_enter": "Agent-action, ((Animal-agent, Experiment-participant), (With-in, (Virtual-world, Label/site-{site_index})))",
+      "reward_site_exit": "Agent-action, ((Animal-agent, Experiment-participant), (Outside-of, (Virtual-world, Label/site-{site_index})))",
+      "odor_onset": "(Def/Odor, (Sensory-event, Olfactory-presentation, Description/{odor_id}, Description/{concentration}), Onset)",
+      "odor_offset": "(Def/Odor, Offset)",
+      "reward": "Sensory-event, Gustatory-presentation, (Ingestible-object/Water, Param/volume-{reward_volume}, Reward)",
+      "lick": "Agent-action, (Animal-agent, Lick)",
+      "tone": "Sensory-event, Cue, (Auditory-presentation, (Tone))",
+      "patch_enter": "Agent-action, ((Animal-agent, Experiment-participant), (With-in, (Virtual-world, Label/patch-{patch_index})))",
+      "patch_exit": "Agent-action, ((Animal-agent, Experiment-participant), (Outside-of, (Virtual-world, Label/patch-{patch_index})))",
+      "block_onset": "(Def/Block, (Experiment-structure, Label/block-{block_index}), Onset)",
+      "block_offset": "(Def/Block, Offset)",
+      "inter_site_enter": "Agent-action, ((Animal-agent, Experiment-participant), (With-in, (Virtual-world, Label/inter-site-{site_index})))",
+      "inter_site_exit": "Agent-action, ((Animal-agent, Experiment-participant), (Outside-of, (Virtual-world, Label/inter-site-{site_index})))",
+      "inter_patch_enter": "Agent-action, ((Animal-agent, Experiment-participant), (With-in, (Virtual-world, Label/inter-patch-{patch_index})))",
+      "inter_patch_exit": "Agent-action, ((Animal-agent, Experiment-participant), (Outside-of, (Virtual-world, Label/inter-patch-{patch_index})))",
+      "reward_probability": "Measurement-event, Probability/#, Description/Reward-probability",
+      "stop_onset": "Agent-action, (Animal-agent, Experiment-participant)",
+      "stop_offset": "Agent-action, (Animal-agent, Experiment-participant)"
+    }
+  },
+  "site_index": {
+    "Description": "Index identifier of the reward site in the virtual environment",
+    "HED": "ID/#"
+  },
+  "patch_index": {
+    "Description": "Index identifier of the patch in the virtual environment",
+    "HED": "ID/#"
+  },
+  "block_index": {
+    "Description": "Integer identifier of the experimental block within the session",
+    "HED": "ID/#"
+  },
+  "odor_id": {
+    "Description": "Identifier of the odor stimulus presented at the reward site",
+    "HED": "ID/#"
+  },
+  "concentration": {
+    "Description": "Concentration level of the odor stimulus presented at the reward site",
+    "HED": "ID/#"
+  },
+  "reward_volume": {
+    "Description": "Volume of water reward delivered to the mouse upon a correct response",
+    "HED": "Param/volume-#"
+  },
+  "hed_defs": {
+    "HED": {
+      "alldefs": "(Definition/Odor), (Definition/Block)"
+    }
+  }
+}
