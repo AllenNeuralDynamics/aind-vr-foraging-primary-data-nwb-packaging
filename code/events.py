@@ -8,19 +8,18 @@ from typing import Optional
 from pydantic import BaseModel, Field
 from processing import DatasetProcessor
 
+# TODO: try to build these models from the sidecar json
 class RewardSite(BaseModel):
     """Mouse enters and exits a virtual reward site."""
 
-    name: str = Field(
-        default="reward_site",
-        description="Name of the event type."
-    )
+    name_onset: str = Field(default="reward_site_enter")
+    name_offset: str = Field(default="reward_site_exit")
     start_time: float = Field(
-        description="Start time of the event in software time. (unit: second)"
+        description="Start time of the event "
     )
     stop_time: Optional[float] = Field(
         default=None,
-        description="Stop time of the event in software time. (unit: second)"
+        description="Stop time of the event "
     )
     site_index: float = Field(
         description="Index identifier of the reward site."
@@ -30,16 +29,14 @@ class RewardSite(BaseModel):
 class Odor(BaseModel):
     """Onset and offset of the odor stimulus at a reward site."""
 
-    name: str = Field(
-        default="odor",
-        description="Name of the event type."
-    )
+    name_onset: str = Field(default="odor_onset")
+    name_offset: str = Field(default="odor_offset")
     start_time: float = Field(
-        description="Start time of the event in software time. (unit: second)"
+        description="Start time of the event "
     )
     stop_time: Optional[float] = Field(
         default=None,
-        description="Stop time of the event in software time. (unit: second)"
+        description="Stop time of the event "
     )
     site_index: float = Field(
         description="Index identifier of the reward site."
@@ -52,16 +49,14 @@ class Odor(BaseModel):
 class Reward(BaseModel):
     """Water reward delivered to the mouse."""
 
-    name: str = Field(
-        default="reward",
-        description="Name of the event type."
-    )
+    name_onset: str = Field(default="reward")
+    name_offset: str = Field(default="reward")
     start_time: float = Field(
-        description="Start time of the event in software time. (unit: second)"
+        description="Start time of the event "
     )
     stop_time: Optional[float] = Field(
         default=None,
-        description="Stop time of the event in software time. (unit: second)"
+        description="Stop time of the event "
     )
     site_index: float = Field(
         description="Index identifier of the reward site."
@@ -74,32 +69,28 @@ class Reward(BaseModel):
 class Lick(BaseModel):
     """Mouse licks the lick spout."""
 
-    name: str = Field(
-        default="lick",
-        description="Name of the event type."
-    )
+    name_onset: str = Field(default="lick")
+    name_offset: str = Field(default="lick")
     start_time: float = Field(
-        description="Start time of the event in software time. (unit: second)"
+        description="Start time of the event "
     )
     stop_time: Optional[float] = Field(
         default=None,
-        description="Stop time of the event in software time. (unit: second)"
+        description="Stop time of the event "
     )
 
 
 class Tone(BaseModel):
     """Auditory cue indicating mouse has fulfilled stop criteria."""
 
-    name: str = Field(
-        default="tone",
-        description="Name of the event type."
-    )
+    name_onset: str = Field(default="tone")
+    name_offset: str = Field(default="tone")
     start_time: float = Field(
-        description="Start time of the event in software time. (unit: second)"
+        description="Start time of the event "
     )
     stop_time: Optional[float] = Field(
         default=None,
-        description="Stop time of the event in software time. (unit: second)"
+        description="Stop time of the event "
     )
     site_index: float = Field(
         description="Index identifier of the reward site."
@@ -109,35 +100,31 @@ class Tone(BaseModel):
 class Patch(BaseModel):
     """Mouse enters and exits a virtual patch."""
 
-    name: str = Field(
-        default="patch",
-        description="Name of the event type."
-    )
+    name_onset: str = Field(default="patch_enter")
+    name_offset: str = Field(default="patch_exit")
     start_time: float = Field(
-        description="Start time of the event in software time. (unit: second)"
+        description="Start time of the event "
     )
     stop_time: Optional[float] = Field(
         default=None,
-        description="Stop time of the event in software time. (unit: second)"
+        description="Stop time of the event "
     )
-    patch_index: str = Field(
-        description="Label identifier of the patch."
+    patch_index: float = Field(
+        description="Index identifier of the patch."
     )
 
 
 class Block(BaseModel):
     """Onset and offset of an experimental block."""
 
-    name: str = Field(
-        default="block",
-        description="Name of the event type."
-    )
+    name_onset: str = Field(default="block_onset")
+    name_offset: str = Field(default="block_offset")
     start_time: float = Field(
-        description="Start time of the event in software time. (unit: second)"
+        description="Start time of the event "
     )
     stop_time: Optional[float] = Field(
         default=None,
-        description="Stop time of the event in software time. (unit: second)"
+        description="Stop time of the event "
     )
     block_index: float = Field(
         description="Index identifier of the block."
@@ -147,16 +134,14 @@ class Block(BaseModel):
 class InterSite(BaseModel):
     """Mouse traverses an inter-site interval."""
 
-    name: str = Field(
-        default="inter_site",
-        description="Name of the event type."
-    )
+    name_onset: str = Field(default="inter_site_enter")
+    name_offset: str = Field(default="inter_site_exit")
     start_time: float = Field(
-        description="Start time of the event in software time. (unit: second)"
+        description="Start time of the event "
     )
     stop_time: Optional[float] = Field(
         default=None,
-        description="Stop time of the event in software time. (unit: second)"
+        description="Stop time of the event "
     )
     site_index: float = Field(
         description="Index identifier of the adjacent reward site."
@@ -166,35 +151,31 @@ class InterSite(BaseModel):
 class InterPatch(BaseModel):
     """Mouse traverses an inter-patch interval."""
 
-    name: str = Field(
-        default="inter_patch",
-        description="Name of the event type."
-    )
+    name_onset: str = Field(default="inter_patch_enter")
+    name_offset: str = Field(default="inter_patch_exit")
     start_time: float = Field(
-        description="Start time of the event in software time. (unit: second)"
+        description="Start time of the event "
     )
     stop_time: Optional[float] = Field(
         default=None,
-        description="Stop time of the event in software time. (unit: second)"
+        description="Stop time of the event "
     )
     site_index: float = Field(
-        description="Index identifier of the site"
+        description="Index identifier of the adjacent patch."
     )
 
 
 class RewardProbability(BaseModel):
     """Reward probability sampled by the task logic."""
 
-    name: str = Field(
-        default="reward_probability",
-        description="Name of the event type."
-    )
+    name_onset: str = Field(default="reward_probability")
+    name_offset: str = Field(default="reward_probability")
     start_time: float = Field(
-        description="Start time of the event in software time. (unit: second)"
+        description="Start time of the event "
     )
     stop_time: Optional[float] = Field(
         default=None,
-        description="Stop time of the event in software time. (unit: second)"
+        description="Stop time of the event "
     )
     site_index: float = Field(
         description="Index identifier of the reward site."
@@ -204,16 +185,14 @@ class RewardProbability(BaseModel):
 class Stop(BaseModel):
     """Mouse velocity crosses the stop threshold."""
 
-    name: str = Field(
-        default="stop",
-        description="Name of the event type."
-    )
+    name_onset: str = Field(default="stop_onset")
+    name_offset: str = Field(default="stop_offset")
     start_time: float = Field(
-        description="Start time of the event in software time. (unit: second)"
+        description="Start time of the event "
     )
     stop_time: Optional[float] = Field(
         default=None,
-        description="Stop time of the event in software time. (unit: second)"
+        description="Stop time of the event "
     )
 
 
@@ -264,7 +243,7 @@ def extract_patch_events(patches: pd.DataFrame) -> list[Patch]:
         patch_events.append(Patch(
             start_time=timestamp,
             stop_time=stop_time,
-            patch_index=row["data"]["label"],
+            patch_index=i,
         ))
 
     return patch_events
@@ -372,6 +351,7 @@ def generate_event_list(
     events = []
     dataset = processor.dataset
 
+    odor_times = dataset.at("Behavior").at("HarpOlfactometer").load().at("EndValveState").load().data
     for site in sites:
         if site.site_label == "RewardSite":
             events.append(
@@ -383,7 +363,6 @@ def generate_event_list(
             )
             # believe can only happen in reward site
             if not np.isnan(site.odor_onset_time):
-                odor_times = dataset.at("Behavior").at("HarpOlfactometer").load().at("EndValveState").load().data
                 idx = odor_times.index.get_loc(site.odor_onset_time)
                 odor_event_offset_time = odor_times.index[idx + 1]
                 events.append(
@@ -464,6 +443,51 @@ def generate_event_list(
 
     return events
 
+def sidecar_to_hed_dataframe(sidecar: dict) -> pd.DataFrame:
+    """Build a HED reference dataframe from a BIDS sidecar JSON.
+
+    Parameters
+    ----------
+    sidecar : dict
+        BIDS sidecar JSON as a dictionary.
+
+    Returns
+    -------
+    pd.DataFrame
+        Dataframe with columns: value, meaning, hed_tag.
+    """
+    event_type = sidecar["event_type"]
+    levels = event_type["Levels"]
+    hed = event_type["HED"]
+
+    # Build a lookup of placeholder -> HED identifier
+    # e.g. site_index -> ID/#, reward_volume -> Param/volume-#
+    placeholder_hed = {
+        key: sidecar[key]["HED"]
+        for key in sidecar
+        if key not in ("event_type", "hed_defs")
+        and "HED" in sidecar[key]
+    }
+
+    rows = []
+    for event_name, meaning in levels.items():
+        raw_hed = hed.get(event_name, "")
+
+        # Replace placeholders like {site_index} with their HED identifier
+        resolved_hed = raw_hed
+        for placeholder, hed_id in placeholder_hed.items():
+            resolved_hed = resolved_hed.replace(
+                f"{{{placeholder}}}", hed_id
+            )
+
+        rows.append({
+            "value": event_name,
+            "meaning": meaning,
+            "hed_tag": resolved_hed,
+        })
+
+    return pd.DataFrame(rows)
+
 def events_to_dataframe(events: list[AnyEvent]) -> pd.DataFrame:
     """Convert a list of events to a dataframe.
 
@@ -477,27 +501,48 @@ def events_to_dataframe(events: list[AnyEvent]) -> pd.DataFrame:
     pd.DataFrame
         Dataframe with one row per event onset/offset.
     """
+    # Infer number of channels from first event with concentration
+    n_channels = next(
+        (
+            len(e.concentration)
+            for e in events
+            if hasattr(e, "concentration")
+            and isinstance(e.concentration, list)
+        ),
+        0,
+    )
+
     rows = []
 
     for event in events:
+        concentration = getattr(event, "concentration", None)
+        concentration_cols = {
+            f"concentration_ch{i}": (
+                concentration[i]
+                if isinstance(concentration, list)
+                else np.nan
+            )
+            for i in range(n_channels)
+        }
+
         base = {
             "site_index": getattr(event, "site_index", np.nan),
             "patch_index": getattr(event, "patch_index", np.nan),
             "block_index": getattr(event, "block_index", np.nan),
-            "concentration": getattr(event, "concentration", np.nan),
             "reward_volume": getattr(event, "reward_volume", np.nan),
+            **concentration_cols,
         }
 
         rows.append({
             "timestamp": event.start_time,
-            "event_type": f"{event.name}_onset",
+            "event_type": event.name_onset,
             **base,
         })
 
         if event.stop_time is not None:
             rows.append({
                 "timestamp": event.stop_time,
-                "event_type": f"{event.name}_offset",
+                "event_type": event.name_offset,
                 **base,
             })
 
