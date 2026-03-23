@@ -279,52 +279,29 @@ def extract_block_events(blocks: pd.DataFrame) -> list[Block]:
     return block_events
 
 def extract_stop_events(
-    velocity: pd.DataFrame,
     stop_threshold: pd.DataFrame,
 ) -> list[Stop]:
-    """Extract stop onset and offset events by comparing absolute
-    velocity against the stop velocity threshold.
+    """Extract stop onset and offset events from the
+    StopVelocityThreshold stream, where alternating rows
+    represent stop onset and offset.
 
     Parameters
     ----------
-    velocity : pd.DataFrame
-        Velocity dataframe with a 'filtered_velocity' column.
     stop_threshold : pd.DataFrame
-        StopVelocityThreshold dataframe with a 'data' column
-        containing the threshold value at each timestamp.
+        StopVelocityThreshold dataframe with a 'data' column.
 
     Returns
     -------
     list[Stop]
         List of Stop events with start and stop times.
     """
-    velocity = velocity.dropna(subset=["filtered_velocity"])
-
-    # Align threshold to velocity timestamps
-    threshold = pd.merge_asof(
-        velocity.sort_index(),
-        stop_threshold[["data"]].rename(
-            columns={"data": "threshold"}
-        ).sort_index(),
-        left_index=True,
-        right_index=True,
-        direction="backward",
-    )["threshold"]
-
-    is_stopped = velocity["filtered_velocity"].abs() < threshold
-
-    # Detect transitions
-    transitions = is_stopped.astype(int).diff()
-    stop_onsets = transitions[transitions == 1].index
-    stop_offsets = transitions[transitions == -1].index
-
     events = []
-    for onset in stop_onsets:
-        subsequent = stop_offsets[stop_offsets > onset]
-        offset = subsequent[0] if len(subsequent) > 0 else None
+
+    timestamps = stop_threshold.index.values
+    for i in range(0, len(timestamps) - 1, 2):
         events.append(Stop(
-            start_time=onset,
-            stop_time=offset,
+            start_time=timestamps[i],
+            stop_time=timestamps[i + 1],
         ))
 
     return events
@@ -434,10 +411,9 @@ def generate_event_list(
     block_events = extract_block_events(blocks)
     for block_event in block_events:
         events.append(block_event)
-    
-    velocity = processor.get_velocity()
+
     stop_threshold = dataset.at("Behavior").at("SoftwareEvents").at("StopVelocityThreshold").load().data
-    stop_events = extract_stop_events(velocity, stop_threshold)
+    stop_events = extract_stop_events(stop_threshold)
     for stop_event in stop_events:
         events.append(stop_event)
 
