@@ -166,7 +166,7 @@ if __name__ == "__main__":
             "Low-pass FIR filter applied to velocity signal. "
             "Filter designed using scipy.signal.firwin with 61 taps (order 60). "
             "Cutoff frequency: 5 Hz. Nyquist rate: 500 Hz (sampling rate: 1000 Hz). "
-            "Zero-phase filtering applied via scipy.signal.filtfilt.". 
+            "Zero-phase filtering applied via scipy.signal.filtfilt."
         ),
         unit="cm/s",
         timestamps=filtered_velocity.index.values,
@@ -264,7 +264,7 @@ if __name__ == "__main__":
 
     end_process_time = datetime.now()
     data_process = DataProcess(
-        name="VR Foraging NWB Packaging Process"
+        name="VR Foraging NWB Packaging Process",
         start_date_time=start_process_time,
         end_date_time=end_process_time,
         stage=ProcessStage.PROCESSING,
