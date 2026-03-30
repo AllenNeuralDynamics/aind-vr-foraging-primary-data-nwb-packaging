@@ -162,6 +162,12 @@ if __name__ == "__main__":
     velocity_series = TimeSeries(
         name="Velocity",
         data=filtered_velocity["filtered_velocity"].values,
+        description=str(
+            "Low-pass FIR filter applied to velocity signal. "
+            "Filter designed using scipy.signal.firwin with 61 taps (order 60). "
+            "Cutoff frequency: 5 Hz. Nyquist rate: 500 Hz (sampling rate: 1000 Hz). "
+            "Zero-phase filtering applied via scipy.signal.filtfilt.". 
+        ),
         unit="cm/s",
         timestamps=filtered_velocity.index.values,
     )
@@ -172,6 +178,7 @@ if __name__ == "__main__":
         name="Sniffing",
         data=sniffing.values,
         unit="V",
+        description="Raw Voltage acquired from SniffDetector device",
         timestamps=sniffing.index.values,
     )
     processing_module.add(sniffing_series)
@@ -180,6 +187,7 @@ if __name__ == "__main__":
     lick_series = TimeSeries(
         name="Licks",
         data=licks.values,
+        description="Lick Onset times",
         unit="V",
         timestamps=licks.index.values,
     )
