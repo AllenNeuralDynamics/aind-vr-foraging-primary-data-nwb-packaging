@@ -7,14 +7,16 @@ import contraqctor.contract as data_contract
 from contraqctor.contract.base import DataStream
 import pynwb
 
+
 from aind_data_access_api.document_db import MetadataDbClient
 from aind_data_schema.components.identifiers import Code
 from aind_data_schema.core.processing import DataProcess, ProcessStage
 from aind_data_schema_models.process_names import ProcessName
 from aind_nwb_utils.utils import create_base_nwb_file
 from dateutil import parser
+from events import generate_event_list, events_to_dataframe, sidecar_to_hed_dataframe
 from hdmf_zarr import NWBZarrIO
-from ndx_events import NdxEventsNWBFile
+from ndx_events import NdxEventsNWBFile, EventsTable, MeaningsTable
 from pydantic import Field
 from pydantic_core import ValidationError
 from pydantic_settings import BaseSettings
@@ -30,6 +32,9 @@ logger = logging.getLogger(__name__)
 API_GATEWAY_HOST = "api.allenneuraldynamics.org"
 VERSION="8.0"
 GITHUB_URL="https://github.com/AllenNeuralDynamics/aind-vr-foraging-primary-data-nwb-packaging.git"
+EVENTS_SIDECAR_PATH = Path(
+    "/root/capsule/code/events_sidecar.json"
+)
 
 import json
 from pathlib import Path
@@ -58,6 +63,8 @@ if __name__ == "__main__":
         version="v2"
     )
 
+    with open(EVENTS_SIDECAR_PATH, "r") as f:
+        events_sidecar = json.load(f)
 
     settings = VRForagingSettings()
     start_process_time = datetime.now()
@@ -114,14 +121,37 @@ if __name__ == "__main__":
         primary_data_path[0], version=contract_version
     )
 
-    exec = vr_foraging_dataset["Behavior"].load_all()  # load tree structure
-    streams = tuple(vr_foraging_dataset.iter_all())
- 
+    # exec = vr_foraging_dataset["Behavior"].load_all()  # load tree structure
+    # streams = tuple(vr_foraging_dataset.iter_all())
+    
+    logger.info("Running data parser")
     processor = DatasetProcessor(vr_foraging_dataset, primary_data_path[0], raise_on_error=False)
     processed_sites = processor.process()
 
+    logger.info("Generating events ")
+    event_list = generate_event_list(processor, processed_sites)
+    event_dataframe = events_to_dataframe(event_list)
+    meanings_dataframe = sidecar_to_hed_dataframe(events_sidecar)
+
+    event_table = EventsTable.from_dataframe(
+        name="events",
+        table_description="Event table for VR Foraging Behavior Task",
+        df=event_dataframe
+
+    )
+
+    meanings_table = MeaningsTable.from_dataframe(
+        name="meanings",
+        table_description=str(
+            "Description of events for the VR Foraging task",
+        ),
+        df=meanings_dataframe
+    )
+    event_table.add_meanings_tables(meanings_table)
+
 
     nwb_file = create_base_nwb_file(primary_data_path[0])
+    nwb_file.add_events_table(event_table)
     processing_module = nwb_file.create_processing_module(
         name="Behavior", description="Behavior Data - Velocity, Sniffing, and Licks"
     )
@@ -152,53 +182,55 @@ if __name__ == "__main__":
         timestamps=licks.index.values,
     )
     processing_module.add(lick_series)
-    for stream in streams:
-        if stream.is_collection:  # only process leaf nodes into nwb
-            continue
 
-        name = stream.resolved_name.replace("::", ".")
-        name = name[name.index(".") + 1:]
-        if isinstance(stream, data_contract.harp.HarpRegister) or isinstance(
-            stream, data_contract.csv.Csv
-        ):
-            try:
-                dynamic_table = pynwb.core.DynamicTable.from_dataframe(
-                    name=name,
-                    table_description=stream.description,
-                    df=stream.data.reset_index(),
-                )
-                nwb_file.add_acquisition(dynamic_table)
-            except (ValueError, FileNotFoundError) as e:
-                logger.error(
-                    f"Failed to load {stream.name} with exception {e}"
-                )
-        elif isinstance(stream, data_contract.json.SoftwareEvents):
-            try:
-                data = utils.clean_dataframe_for_nwb(stream.data.reset_index())
-                dynamic_table = pynwb.core.DynamicTable.from_dataframe(
-                    name=name, table_description=stream.description, df=data
-                )
-                nwb_file.add_acquisition(dynamic_table)
-            except (ValueError, FileNotFoundError) as e:
-                logger.error(
-                    f"Failed to get {stream.name} \
-                    from {stream.parent} with error {e}"
-                )
-        elif isinstance(stream, data_contract.json.PydanticModel):
-            try:
-                data = utils.clean_dictionary_for_nwb(stream.data.model_dump())
+    logger.info("Packaging nwb ...")
+    # for stream in streams:
+    #     if stream.is_collection:  # only process leaf nodes into nwb
+    #         continue
 
-                nwb_file.add_acquisition(
-                    pynwb.core.DynamicTable(
-                        name=name,
-                        description=json.dumps(data),
-                    )
-                )
-            except (ValidationError) as e:
-                logger.error(
-                    f"Failed to get {stream.name} \
-                    from {stream.parent} with error {e}"
-                )
+    #     name = stream.resolved_name.replace("::", ".")
+    #     name = name[name.index(".") + 1:]
+    #     if isinstance(stream, data_contract.harp.HarpRegister) or isinstance(
+    #         stream, data_contract.csv.Csv
+    #     ):
+    #         try:
+    #             dynamic_table = pynwb.core.DynamicTable.from_dataframe(
+    #                 name=name,
+    #                 table_description=stream.description,
+    #                 df=stream.data.reset_index(),
+    #             )
+    #             nwb_file.add_acquisition(dynamic_table)
+    #         except (ValueError, FileNotFoundError) as e:
+    #             logger.error(
+    #                 f"Failed to load {stream.name} with exception {e}"
+    #             )
+    #     elif isinstance(stream, data_contract.json.SoftwareEvents):
+    #         try:
+    #             data = utils.clean_dataframe_for_nwb(stream.data.reset_index())
+    #             dynamic_table = pynwb.core.DynamicTable.from_dataframe(
+    #                 name=name, table_description=stream.description, df=data
+    #             )
+    #             nwb_file.add_acquisition(dynamic_table)
+    #         except (ValueError, FileNotFoundError) as e:
+    #             logger.error(
+    #                 f"Failed to get {stream.name} \
+    #                 from {stream.parent} with error {e}"
+    #             )
+    #     elif isinstance(stream, data_contract.json.PydanticModel):
+    #         try:
+    #             data = utils.clean_dictionary_for_nwb(stream.data.model_dump())
+
+    #             nwb_file.add_acquisition(
+    #                 pynwb.core.DynamicTable(
+    #                     name=name,
+    #                     description=json.dumps(data),
+    #                 )
+    #             )
+    #         except (ValidationError) as e:
+    #             logger.error(
+    #                 f"Failed to get {stream.name} \
+    #                 from {stream.parent} with error {e}"
+                # )
 
     for field_name, field in Site.model_fields.items():
         if field_name in ["start_time", "stop_time"]:
@@ -231,7 +263,7 @@ if __name__ == "__main__":
         experimenters=["Tiffany Ona", "Bruno Cruz", "Arjun Sridhar"],
         code=Code(
             url=GITHUB_URL,
-            version="4000526a3fb5844208e873ae4647d7bab76da0fd"
+            version=VERSION
         ),
         output_parameters={},
         notes=f"Run with data contract version: {contract_version}. For manuscript, run with commit hash for one-off processing"
