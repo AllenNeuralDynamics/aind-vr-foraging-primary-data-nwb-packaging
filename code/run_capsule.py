@@ -272,7 +272,7 @@ if __name__ == "__main__":
         experimenters=["Tiffany Ona", "Bruno Cruz", "Arjun Sridhar"],
         code=Code(
             url=GITHUB_URL,
-            version="286e79f7073d9d5c0ab039aeda75fc87ea4358b0"
+            version="bff875c29c82ce46ee6b3e0e86fd5101556124b5"
         ),
         output_parameters={},
         notes=f"Run with data contract version: {contract_version}. For manuscript, run with commit hash for one-off processing"
