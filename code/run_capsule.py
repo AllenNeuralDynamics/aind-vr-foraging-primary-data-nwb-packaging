@@ -264,6 +264,7 @@ if __name__ == "__main__":
 
     end_process_time = datetime.now()
     data_process = DataProcess(
+        name="VR Foraging NWB Packaging Process"
         start_date_time=start_process_time,
         end_date_time=end_process_time,
         stage=ProcessStage.PROCESSING,
@@ -271,7 +272,7 @@ if __name__ == "__main__":
         experimenters=["Tiffany Ona", "Bruno Cruz", "Arjun Sridhar"],
         code=Code(
             url=GITHUB_URL,
-            version="4000526a3fb5844208e873ae4647d7bab76da0fd"
+            version="286e79f7073d9d5c0ab039aeda75fc87ea4358b0"
         ),
         output_parameters={},
         notes=f"Run with data contract version: {contract_version}. For manuscript, run with commit hash for one-off processing"
