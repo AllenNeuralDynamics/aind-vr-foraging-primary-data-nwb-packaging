@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from processing import DatasetProcessor
 
 # TODO: try to build these models from the sidecar json
+# TODO: move this to package
 class RewardSite(BaseModel):
     """Mouse enters and exits a virtual reward site."""
 
