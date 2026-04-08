@@ -17,3 +17,4 @@ dependencies = [
 
 [tool.uv.sources]
 ndx-events = { git = "https://github.com/rly/ndx-events.git"}
+aind-nwb-utils = { git = "https://github.com/AllenNeuralDynamics/aind-nwb-utils.git", branch = "fix-remove-procedures"}

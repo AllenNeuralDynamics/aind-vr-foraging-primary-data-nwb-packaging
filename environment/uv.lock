@@ -96,18 +96,14 @@ wheels = [
 
 [[package]]
 name = "aind-nwb-utils"
-version = "0.2.0"
-source = { registry = "https://pypi.org/simple" }
+version = "0.2.3"
+source = { git = "https://github.com/AllenNeuralDynamics/aind-nwb-utils.git?branch=fix-remove-procedures#d5c30e0a0c79922173b9d1bae867761d574d2276" }
 dependencies = [
     { name = "hdmf-zarr" },
     { name = "ndx-events" },
     { name = "pynwb" },
     { name = "pytz" },
     { name = "xarray" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/92/16/d96f8e8f94074d3743608af8bd07c3be3826fdd38e67d378be5c23991340/aind_nwb_utils-0.2.0.tar.gz", hash = "sha256:5663d716e62f8deb30a716d7a2ec25c66ce5f79de2acc35e2cd0c833daa7b9dd", size = 39199192, upload-time = "2026-02-26T18:34:12.134Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/99/2f/a1b451424b87d05d8eed26dd3d90b1038f4aeec7a33178c3a6033c288684/aind_nwb_utils-0.2.0-py3-none-any.whl", hash = "sha256:753bdd9f612cc299e5fa17d84a702fe5eb23004771eb44737e9e4a5d1aef0cc2", size = 13092, upload-time = "2026-02-26T18:34:10.412Z" },
 ]
 
 [[package]]
@@ -130,7 +126,7 @@ requires-dist = [
     { name = "aind-behavior-vr-foraging" },
     { name = "aind-data-access-api", extras = ["docdb"] },
     { name = "aind-data-schema", specifier = ">2.0" },
-    { name = "aind-nwb-utils" },
+    { name = "aind-nwb-utils", git = "https://github.com/AllenNeuralDynamics/aind-nwb-utils.git?branch=fix-remove-procedures" },
     { name = "contraqctor" },
     { name = "hdmf-zarr" },
     { name = "ndx-events", git = "https://github.com/rly/ndx-events.git" },
