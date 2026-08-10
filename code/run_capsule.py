@@ -79,9 +79,8 @@ if __name__ == "__main__":
         ),
         output_parameters={},
         pipeline_name=_PIPELINE_NAME,
-        notes=(
-            f"Packaging dataset version: {provenance['dataset_version']}; "
-            f"data contract version: {provenance['data_contract_version']}"
+        notes=json.dumps(
+            nwb_session.nwb_file.was_generated_by
         )
     )
     with open(settings.output_directory / "data_process.json", "w") as f:
