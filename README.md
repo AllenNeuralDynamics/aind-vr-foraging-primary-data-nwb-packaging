@@ -32,5 +32,5 @@ Files written to `/results`:
 
 | File | Description |
 | --- | --- |
-| `behavior.nwb.zarr` | The packaged NWB file (Zarr backend), following the file standards listed [here](https://github.com/AllenNeuralDynamics/aind-file-standards/blob/main/file_formats/nwb.md) |
+| `behavior.nwb.zarr` | The packaged NWB file (Zarr backend), following the file standards listed [here](https://github.com/AllenNeuralDynamics/aind-file-standards/blob/main/docs/file_formats/nwb.md) |
 | `data_process.json` | Provenance following the `aind-data-schema` `DataProcess` model, recording the packaging library and dataset versions (also mirrored on the file in `nwb.was_generated_by`) |
