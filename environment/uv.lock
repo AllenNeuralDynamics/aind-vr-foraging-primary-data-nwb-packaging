@@ -60,8 +60,8 @@ data = [
 
 [[package]]
 name = "aind-behavior-vr-foraging-packaging"
-version = "0.0.5.dev8+ga6cc509d4"
-source = { git = "https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Packaging.git#a6cc509d4567eb2c75b478eea383391911604224" }
+version = "0.0.6"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aind-behavior-vr-foraging", extra = ["data"] },
     { name = "aind-nwb-utils" },
@@ -73,6 +73,10 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "pynwb" },
     { name = "scipy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4d/8a/a49f527d2b3fc5c40d4c0f721f668a5249216665d68089930f0212ec97d4/aind_behavior_vr_foraging_packaging-0.0.6.tar.gz", hash = "sha256:1b0ecdd76ec1bd25ff3587b9d767f509d59f1b82bd1d3a60d573d3306de1dbe6", size = 297049, upload-time = "2026-08-11T00:14:22.203Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/84/fc/d361fbc0edc9764829c94badd165262479a2c305e7e6ef18e4682e3a2835/aind_behavior_vr_foraging_packaging-0.0.6-py3-none-any.whl", hash = "sha256:f53edac40d5f04a43793bc984b96f3ce5687924a7accbfb50a254845dd5809f3", size = 46429, upload-time = "2026-08-11T00:14:20.94Z" },
 ]
 
 [[package]]
@@ -132,7 +136,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aind-behavior-vr-foraging-packaging", git = "https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Packaging.git" },
+    { name = "aind-behavior-vr-foraging-packaging", specifier = ">=0.0.5" },
     { name = "aind-data-schema", specifier = ">2.0" },
 ]
 

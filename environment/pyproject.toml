@@ -5,9 +5,6 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "aind-behavior-vr-foraging-packaging",
+    "aind-behavior-vr-foraging-packaging>=0.0.5",
     "aind-data-schema>2.0"
 ]
-
-[tool.uv.sources]
-aind-behavior-vr-foraging-packaging = { git = "https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Packaging.git" }
