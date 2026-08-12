@@ -2,7 +2,7 @@
 
 The capsule can be found [here](https://codeocean.allenneuraldynamics.org/capsule/3265591/tree).
 
-This capsule is a thin wrapper around the [`aind-behavior-vr-foraging-packaging`](https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Packaging) library. All packaging logic — data-stream processors, NWB layout, and how to read the resulting file — lives in that package and is documented there. `run_capsule.py` only resolves the data contract, calls the library, and writes the results.
+This capsule is a thin wrapper around the [`aind-behavior-vr-foraging-packaging`](https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Packaging) library. All packaging logic — data-stream processors, NWB layout, and how to read the resulting file — lives in that package and is documented there. `run_capsule.py` calls the library, and writes the results.
 
 **Changes to the packaging pipeline should be made as PRs to [`Aind.Behavior.VrForaging.Packaging`](https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Packaging), not here.** This capsule should only change when the pinned library version is bumped or when the Code Ocean wiring itself (data contract resolution, output paths, environment) needs updating.
 
