@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -8,10 +9,10 @@ from aind_behavior_vr_foraging_packaging.session_pipeline import create_processo
 from aind_data_schema.components.identifiers import Code
 from aind_data_schema.core.processing import DataProcess, ProcessStage
 from aind_data_schema_models.process_names import ProcessName
+from log_schema import setup_logging
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-logger = logging.getLogger(__name__)
 _PACKAGING_GITHUB_URL="https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Packaging.git"
 _PIPELINE_NAME = "aind-vr-foraging-pipeline"
 
@@ -27,12 +28,10 @@ class VRForagingSettings(BaseSettings, cli_parse_args=True):
         default=Path("/results/"), description="Output directory"
     )
 
-
-if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-
+def run() -> None:
+    """
+    Entrypoint for executing
+    """
     settings = VRForagingSettings()
     start_process_time = datetime.now(tz=UTC)
 
@@ -48,7 +47,20 @@ if __name__ == "__main__":
     with open(primary_data_path[0] / "data_description.json", "r") as f:
         data_description_json = json.load(f)
 
-    logger.info(
+    ### logging setup
+    acquisition_name = data_description_json["name"]
+    process_name = os.getenv("PROCESS_NAME", "primary-nwb-packaging-vr-foraging")
+    pipeline_name = os.getenv("PIPELINE_NAME", "")
+    setup_logging(
+        (Path(__file__).parent / "logging.yml").as_posix(),
+        model={
+            "acquisition_name": acquisition_name,
+            "process_name": process_name,
+            "pipeline_name": pipeline_name    
+        },
+    )
+    logging.info("Begin processing...", extra={"event_type": "stage_start"})
+    logging.info(
         f"Found primary data {data_description_json['name']}. \
         Starting acquisition nwb packaging now"
     )
@@ -57,12 +69,12 @@ if __name__ == "__main__":
     processors = create_processors(nwb_session.dataset)
     nwb_session.run(*processors)
 
-    logger.info(
+    logging.info(
         "Successfully finished nwb packaging."
     )
 
     nwb_result_path = settings.output_directory / "behavior.nwb.zarr"
-    logger.info(f"Writing to disk now at path {nwb_result_path} as zarr")
+    logging.info(f"Writing to disk now at path {nwb_result_path} as zarr")
     nwb_session.write_nwb_zarr(nwb_result_path)
 
     end_process_time = datetime.now(tz=UTC)
@@ -85,3 +97,10 @@ if __name__ == "__main__":
     )
     with open(settings.output_directory / "data_process.json", "w") as f:
         f.write(data_process.model_dump_json(indent=4))
+    logging.info("Pipeline stage completed", extra={"event_type": "stage_complete"})
+
+if __name__ == "__main__":
+    try:
+        run()
+    except Exception as e:
+        logging.exception("Pipeline stage failed", extra={"event_type": "stage_error"})
