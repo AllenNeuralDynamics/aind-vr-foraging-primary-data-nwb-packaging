@@ -6,5 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "aind-behavior-vr-foraging-packaging>=0.0.11",
-    "aind-data-schema>2.0"
+    "aind-data-schema>2.0",
+    "log-schema==0.2.10.dev1",
+    "watchtower"
 ]
