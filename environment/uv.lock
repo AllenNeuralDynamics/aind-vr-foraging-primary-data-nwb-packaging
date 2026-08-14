@@ -60,7 +60,7 @@ data = [
 
 [[package]]
 name = "aind-behavior-vr-foraging-packaging"
-version = "0.0.9"
+version = "0.0.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aind-behavior-vr-foraging", extra = ["data"] },
@@ -74,9 +74,9 @@ dependencies = [
     { name = "pynwb" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/41/5b/4666df90f1c7d3374a31fa326c4de33ea45bdd64806209981719e941ffbc/aind_behavior_vr_foraging_packaging-0.0.9.tar.gz", hash = "sha256:558ea782e2b29fee6f62d372bc0ee001c6ae878af4ab4bfad9632e86a50a3695", size = 299349, upload-time = "2026-08-12T15:45:32.122Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b9/c9/a18844fd802f71f4603555c46f7a945ace18effc1c98ab7fcf513bdca735/aind_behavior_vr_foraging_packaging-0.0.11.tar.gz", hash = "sha256:ec8e848979450fe14c77f362bf130d62325a151f59fc0144ff3fcd79fba84f46", size = 299836, upload-time = "2026-08-13T00:15:20.642Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/21/a2/c39fd00023af0fed2e728de17c9bf8b0acc7176d4462e35b104e06f98021/aind_behavior_vr_foraging_packaging-0.0.9-py3-none-any.whl", hash = "sha256:6e02c5520c5edff4e3778f59256c8097542ba0e82641431c22653919d2bcfaee", size = 48602, upload-time = "2026-08-12T15:45:30.925Z" },
+    { url = "https://files.pythonhosted.org/packages/d6/30/112e87bf7ef901dbfb35bbfd36660758a42061b1afa8f099721928a53a45/aind_behavior_vr_foraging_packaging-0.0.11-py3-none-any.whl", hash = "sha256:35ba8fe3731d90ef3425ccead60d23262ad64753d352c3b805abacecdb029e3a", size = 48669, upload-time = "2026-08-13T00:15:19.377Z" },
 ]
 
 [[package]]
@@ -136,7 +136,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aind-behavior-vr-foraging-packaging", specifier = ">=0.0.9" },
+    { name = "aind-behavior-vr-foraging-packaging", specifier = ">=0.0.11" },
     { name = "aind-data-schema", specifier = ">2.0" },
 ]
 
@@ -1468,11 +1468,11 @@ wheels = [
 
 [[package]]
 name = "platformdirs"
-version = "4.11.2"
+version = "4.11.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/e5/98/0bf930c4f97d0266b58a89e36c015f56232c52b5d2f207215d48cca9e8f7/platformdirs-4.11.2.tar.gz", hash = "sha256:3a2ae5fca3520a01ab1be8b45613537f52ddf5b5f6f53d88233892dfbf0cd82d", size = 32716, upload-time = "2026-08-10T15:48:06.092Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/d7/e7bfbc86e9f99ff7807e24de7703f032e9c9ba80bb355cf26e0e9bc5a75e/platformdirs-4.11.3.tar.gz", hash = "sha256:66a73d38a849810252df809a3d8bcbda8e26f6c189920e7535ad608a48dbb5ab", size = 33050, upload-time = "2026-08-13T22:43:27.52Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/49/e2/4e6eee633809c376c024821b91ade709cbfd040ec53939ffbcc292aa7eee/platformdirs-4.11.2-py3-none-any.whl", hash = "sha256:7f89089b6ea71bda7962953edcf784b2e2d9d285b40ad88be2bb75c6e9d82ab4", size = 23361, upload-time = "2026-08-10T15:48:04.855Z" },
+    { url = "https://files.pythonhosted.org/packages/19/a9/c34aebedd3a4c9afe5101b1b8713710b3fec18087c8a36c35d2f909861bd/platformdirs-4.11.3-py3-none-any.whl", hash = "sha256:5ed065d443751de711da036041a7a214122efc4a4de393b3f4137ba5576540e7", size = 23491, upload-time = "2026-08-13T22:43:26.121Z" },
 ]
 
 [[package]]
