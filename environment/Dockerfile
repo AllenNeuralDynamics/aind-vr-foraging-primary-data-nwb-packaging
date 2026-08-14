@@ -6,7 +6,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 ARG GIT_ASKPASS
 ARG GIT_ACCESS_TOKEN
-COPY git-askpass /
+COPY git-ask-pass /
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

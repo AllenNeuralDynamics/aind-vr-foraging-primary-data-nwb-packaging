@@ -1,44 +1,36 @@
 # VR Foraging Primary Data NWB Packaging
 
-The capsule can be found [here](https://codeocean.allenneuraldynamics.org/capsule/3265591/tree). 
+The capsule can be found [here](https://codeocean.allenneuraldynamics.org/capsule/3265591/tree).
 
-This capsule packages VR Foraging Primary Data into NWB following the file standards listed [here](https://github.com/AllenNeuralDynamics/aind-file-standards/blob/main/file_formats/nwb.md). 
+This capsule is a thin wrapper around the [`aind-behavior-vr-foraging-packaging`](https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Packaging) library. All packaging logic — data-stream processors, NWB layout, and how to read the resulting file — lives in that package and is documented there. `run_capsule.py` calls the library, and writes the results.
 
-The capsule uses a data contract with relevants paths to raw data to be packaged. Details on the data contract and an example can be found at the [following](https://allenneuraldynamics.github.io/Aind.Behavior.VrForaging/dataset.html). 
+**Changes to the packaging pipeline should be made as PRs to [`Aind.Behavior.VrForaging.Packaging`](https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Packaging), not here.** This capsule should only change when the pinned library version is bumped or when the Code Ocean wiring itself (data contract resolution, output paths, environment) needs updating.
 
-The output of this packaging is an nwb file with data in the `acquisition` module. Most, if not all of the data in the nwb are stored as `DynamicTables`, a table representation of the various streams from the input data contract. To read the nwb and access the data, the following code snippet can be run - dependencies are `hdmf-zarr`, and `pynwb`.
+## Input
+
+A single raw acquisition directory mounted at `/data`. Input data should follow the standard defined [here](https://github.com/AllenNeuralDynamics/aind-file-standards/blob/main/docs/core/core-standards.md).
 
 ```
-from hdmf_zarr import NWBZarrIO
-import json
-
-# REPLACE WITH PATH TO NWB
-with NWBZarrIO('path/to/nwb', 'r') as io:
-  nwb = io.read()
-
-keys = list(nwb.acquisition.keys())
-# access one of streams from acquisition
-data = nwb.acquisition[keys[0]]
-print(data)
-data_df = data[:] # gives a dataframe representation of table
-
-# For fetching json files from the data contract, for now, they are stored in a dynamic table but in the description field. The way to recover it from the nwb is as follows:
-json_dict = json.loads(nwb.acquisition[key].description)
+/data/
+└── <asset_name>/
+    ├── acquisition.json
+    ├── data_description.json
+    ├── instrument.json
+    ├── procedures.json
+    ├── processing.json
+    ├── subject.json
+    └── behavior/
+        ├── Behavior.harp/
+        ├── SoftwareEvents/
+        ├── Logs/
+        └── ...
 ```
 
-The acqusition module in the nwb is structured as follows:
-## 📁 NWBFile: Acqusition Module
+## Output
 
-This module contains tables from the primary data. Each entry is a `DynamicTable` that can be accessed with the code snippet above. The tables with json information in the description are `Behavior.InputSchemas.Rig`, `Behavior.InputSchemas.Session`, and `Behavior.InputSchemas.TaskLogic`.
+Files written to `/results`:
 
-### 📑 DynamicTables
-
-- `Behavior.HarpBehavior.AnalogData`
-- `Behavior.HarpBehavior.AssemblyVersion`
-- `Behavior.HarpBehavior.Camera0Frame`
-- `Behavior.HarpBehavior.Camera0Frequency`
-- `Behavior.HarpBehavior.Camera1Frame`
-- `Behavior.HarpBehavior.Camera1Frequency`
-- `Behavior.HarpBehavior.ClockConfiguration`
-- `Behavior.HarpBehavior.CoreVersionHigh`
-- `...`
+| File | Description |
+| --- | --- |
+| `behavior.nwb.zarr` | The packaged NWB file (Zarr backend), following the file standards listed [here](https://github.com/AllenNeuralDynamics/aind-file-standards/blob/main/docs/file_formats/nwb.md) |
+| `data_process.json` | Provenance following the `aind-data-schema` `DataProcess` model, recording the packaging library and dataset versions (also mirrored on the file in `nwb.was_generated_by`) |
