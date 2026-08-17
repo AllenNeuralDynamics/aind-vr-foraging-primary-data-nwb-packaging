@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from aind_behavior_vr_foraging_packaging.nwb_file import NwbSession
-from aind_behavior_vr_foraging_packaging.session_pipeline import create_processors
+from aind_behavior_vr_foraging_packaging.pipeline import create_processors
 from aind_data_schema.components.identifiers import Code
 from aind_data_schema.core.processing import DataProcess, ProcessStage
 from aind_data_schema_models.process_names import ProcessName
@@ -102,5 +102,6 @@ def run() -> None:
 if __name__ == "__main__":
     try:
         run()
-    except Exception as e:
+    except Exception:
         logging.exception("Pipeline stage failed", extra={"event_type": "stage_error"})
+        raise
