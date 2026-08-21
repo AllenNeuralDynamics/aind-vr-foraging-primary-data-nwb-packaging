@@ -5,7 +5,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from aind_behavior_vr_foraging_packaging.nwb_file import NwbSession
-from aind_behavior_vr_foraging_packaging.session_pipeline import create_processors
+from aind_behavior_vr_foraging_packaging.pipeline import create_processors
+from aind_behavior_vr_foraging_packaging.pipeline import process_session
 from aind_data_schema.components.identifiers import Code
 from aind_data_schema.core.processing import DataProcess, ProcessStage
 from aind_data_schema_models.process_names import ProcessName
@@ -73,8 +74,16 @@ def run() -> None:
         "Successfully finished nwb packaging."
     )
 
+    logging.info(
+        "Generating parquet results"
+    )
+    process_session(nwb_session.dataset, output_dir=settings.output_directory, processors=processors)
+    logging.info(
+        f"Successfully wrote parquet files to {settings.output_directory}"
+    )
+
     nwb_result_path = settings.output_directory / "behavior.nwb.zarr"
-    logging.info(f"Writing to disk now at path {nwb_result_path} as zarr")
+    logging.info(f"Writing nwb to disk now at path {nwb_result_path} as zarr")
     nwb_session.write_nwb_zarr(nwb_result_path)
 
     end_process_time = datetime.now(tz=UTC)
@@ -102,5 +111,6 @@ def run() -> None:
 if __name__ == "__main__":
     try:
         run()
-    except Exception as e:
+    except Exception:
         logging.exception("Pipeline stage failed", extra={"event_type": "stage_error"})
+        raise
