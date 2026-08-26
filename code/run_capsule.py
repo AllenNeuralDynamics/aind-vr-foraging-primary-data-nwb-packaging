@@ -70,6 +70,7 @@ def run() -> None:
     process_session(
         dataset=dataset, 
         output_dir=settings.output_directory, 
+        write_parquet=True,
         write_nwb=True
     )
 
