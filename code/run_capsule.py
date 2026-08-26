@@ -77,9 +77,10 @@ def run() -> None:
     logging.info(
         "Generating parquet results"
     )
-    process_session(nwb_session.dataset, output_dir=settings.output_directory, processors=processors)
+    parquet_directory = settings.output_directory / "session_parquets"
+    process_session(nwb_session.dataset, output_dir=parquet_directory, processors=processors)
     logging.info(
-        f"Successfully wrote parquet files to {settings.output_directory}"
+        f"Successfully wrote parquet files to {parquet_directory}"
     )
 
     nwb_result_path = settings.output_directory / "behavior.nwb.zarr"
@@ -98,11 +99,8 @@ def run() -> None:
             url=_PACKAGING_GITHUB_URL,
             version=provenance["packaging_version"]
         ),
-        output_parameters={},
+        output_parameters=provenance,
         pipeline_name=_PIPELINE_NAME,
-        notes=json.dumps(
-            nwb_session.nwb_file.was_generated_by
-        )
     )
     with open(settings.output_directory / "data_process.json", "w") as f:
         f.write(data_process.model_dump_json(indent=4))
