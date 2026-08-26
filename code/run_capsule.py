@@ -92,6 +92,7 @@ def run() -> None:
     data_process = DataProcess(
         start_date_time=start_process_time,
         end_date_time=end_process_time,
+        name="primary-nwb-packaging-vr-foraging",
         stage=ProcessStage.PROCESSING,
         process_type=ProcessName.PIPELINE,
         experimenters=["Bruno Cruz", "Tiffany Ona", "Arjun Sridhar"],
