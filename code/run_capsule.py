@@ -19,7 +19,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 
 _PACKAGING_GITHUB_URL="https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Packaging.git"
-_PROCESS_NAME = "primary-nwb-packaging-vr-foraging-manuscript"
+_PROCESS_NAME = "primary-nwb-packaging-vr-foraging"
 _FROZEN_METADATA_ASSET = "vr_paper_raw_metadata_09-02-2026"
 _EXPERIMENTERS = ["Bruno Cruz", "Tiffany Ona", "Arjun Sridhar"]
 _FILES_TO_COPY = [
