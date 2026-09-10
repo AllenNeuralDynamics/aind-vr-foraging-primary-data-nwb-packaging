@@ -192,6 +192,7 @@ def run() -> None:
             version=provenance.packaging_version
         ),
         output_parameters=provenance.model_dump(),
+        notes="Run with frozen metadata asset so output has all v2 metadata"
     )
 
     frozen_session_metadata_dir = copy_aind_metadata(acquisition_name, settings)
