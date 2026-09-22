@@ -2,8 +2,8 @@
 	"version": 1,
 	"attached_datasets": [
 		{
-			"id": "e604ffcb-d473-4a6d-b999-efbc1347bb80",
-			"mount": "vr_paper_raw_metadata_09-02-2026"
+			"id": "b148b732-9421-4ea9-b949-e55861b8fca4",
+			"mount": "vr_sessions_raw_metadata_snapshot_09-22-2026"
 		}
 	]
 }
