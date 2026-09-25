@@ -71,7 +71,8 @@ def run() -> None:
         dataset=dataset, 
         output_dir=settings.output_directory, 
         write_parquet=True,
-        write_nwb=True
+        write_nwb=True,
+        session_id=acquisition_name
     )
 
     end_process_time = datetime.now(tz=UTC)

@@ -60,7 +60,7 @@ data = [
 
 [[package]]
 name = "aind-behavior-vr-foraging-packaging"
-version = "0.21.0"
+version = "0.23.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aind-behavior-curriculum" },
@@ -75,9 +75,9 @@ dependencies = [
     { name = "pynwb" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/05/c2/6b82489f4b0984b0f12664ab29cb7c7b0e3cf275f6bf32de3b715be221ae/aind_behavior_vr_foraging_packaging-0.21.0.tar.gz", hash = "sha256:73a80805860c79360554d7be0974a852acc0454fe445211967c8e05d6064e3e1", size = 339496, upload-time = "2026-09-17T23:57:24.635Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0d/89/d507b4042c3a84787108e293a6a432e5ad74c61e94b8c228e7a020ce6ee6/aind_behavior_vr_foraging_packaging-0.23.0.tar.gz", hash = "sha256:a00ac7bab7b992228e126719b59acd580a15139f3c3c19db8877ea94f5a1f139", size = 379284, upload-time = "2026-09-24T23:43:22.763Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/a9/66c39f0ed0e9ce5a307b020f2a5435887b00ace753d5e5bab62aa5e39e34/aind_behavior_vr_foraging_packaging-0.21.0-py3-none-any.whl", hash = "sha256:694f19dbbf660f585d24342869970229c611bb02ea5c926a5c77bb7f842f5812", size = 58125, upload-time = "2026-09-17T23:57:23.285Z" },
+    { url = "https://files.pythonhosted.org/packages/b0/f6/05a5323809d0b7f97ededd4dd2ef43b84ee653c00d9a022769cd4d3b137a/aind_behavior_vr_foraging_packaging-0.23.0-py3-none-any.whl", hash = "sha256:aec4140ae38a1f818825287a400f6e3a8a1dd4fed5f5e66534407c1e8008cbe9", size = 71752, upload-time = "2026-09-24T23:43:21.424Z" },
 ]
 
 [[package]]
@@ -139,7 +139,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aind-behavior-vr-foraging-packaging", specifier = ">=0.21.0" },
+    { name = "aind-behavior-vr-foraging-packaging", specifier = ">=0.23.0" },
     { name = "aind-data-schema", specifier = ">2.0" },
     { name = "log-schema", specifier = "==0.2.10.dev1" },
     { name = "watchtower" },
