@@ -13,7 +13,7 @@ from aind_data_schema_models.process_names import ProcessName
 from log_schema import setup_logging
 from pydantic import Field
 from pydantic_settings import BaseSettings
-from sites_from_nwb import write_sites_parquet
+from session_parquet import write_parquet_files
 
 _PACKAGING_GITHUB_URL="https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Packaging.git"
 _PIPELINE_NAME = "aind-vr-foraging-pipeline"
@@ -69,7 +69,7 @@ def run() -> None:
 
     dataset = load_dataset(primary_data_path[0])
     processors = create_processors(dataset, session_id=acquisition_name)
-    frames = process_session(
+    process_session(
         dataset=dataset,
         output_dir=settings.output_directory,
         processors=processors,
@@ -77,18 +77,12 @@ def run() -> None:
         write_nwb=True,
         session_id=acquisition_name
     )
-  
-    # sites.parquet must come from the NWB object (Dispatch 12); the other
-    # tables are bit-exact with the NWB data (see issue #39)
-    for proc in processors:
-        if proc.output_name == "sites":
-            write_sites_parquet(
-                settings.output_directory / "behavior.nwb.zarr",
-                settings.output_directory,
-                attrs=frames["sites"].attrs,
-            )
-        else:
-            proc.write_parquet(settings.output_directory)
+    # Dispatch 12: see session_parquet.py for where each table comes from
+    write_parquet_files(
+        processors,
+        nwb_path=settings.output_directory / "behavior.nwb.zarr",
+        output_dir=settings.output_directory,
+    )
 
     end_process_time = datetime.now(tz=UTC)
     provenance = PackagingProvenance.build(dataset)
