@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from aind_behavior_vr_foraging.data_contract import dataset as load_dataset
-from aind_behavior_vr_foraging_packaging.pipeline import process_session
+from aind_behavior_vr_foraging_packaging.pipeline import create_processors, process_session
 from aind_behavior_vr_foraging_packaging._provenance import PackagingProvenance
 from aind_data_schema.components.identifiers import Code
 from aind_data_schema.core.processing import DataProcess, ProcessStage
@@ -13,6 +13,7 @@ from aind_data_schema_models.process_names import ProcessName
 from log_schema import setup_logging
 from pydantic import Field
 from pydantic_settings import BaseSettings
+from session_parquet import write_parquet_files
 
 _PACKAGING_GITHUB_URL="https://github.com/AllenNeuralDynamics/Aind.Behavior.VrForaging.Packaging.git"
 _PIPELINE_NAME = "aind-vr-foraging-pipeline"
@@ -67,12 +68,20 @@ def run() -> None:
     )
 
     dataset = load_dataset(primary_data_path[0])
+    processors = create_processors(dataset, session_id=acquisition_name)
     process_session(
-        dataset=dataset, 
-        output_dir=settings.output_directory, 
-        write_parquet=True,
+        dataset=dataset,
+        output_dir=settings.output_directory,
+        processors=processors,
+        write_parquet=False,
         write_nwb=True,
         session_id=acquisition_name
+    )
+    # Dispatch 12: see session_parquet.py for where each table comes from
+    write_parquet_files(
+        processors,
+        nwb_path=settings.output_directory / "behavior.nwb.zarr",
+        output_dir=settings.output_directory,
     )
 
     end_process_time = datetime.now(tz=UTC)
