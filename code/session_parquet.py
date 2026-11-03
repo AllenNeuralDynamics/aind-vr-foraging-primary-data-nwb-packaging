@@ -1,8 +1,8 @@
 """Write the session's parquet tables in line with Dispatch 12 (issue #40).
 
-- sites: derived from nwb.trials. NWB can't store nulls, so `bool | None`
-  columns are cast back to the Site model's types. Provenance attrs are
-  restored from nwb.was_generated_by.
+- sites: derived from nwb.trials. NWB can't store None, so `bool | None`
+  columns come back as 0.0 / 1.0 / NaN and are cast back to the Site
+  model's types. Provenance attrs are restored from nwb.was_generated_by.
 - every other table: bit-exact with the NWB data (see
   https://github.com/AllenNeuralDynamics/aind-vr-foraging-primary-data-nwb-packaging/issues/39),
   so each processor's write_parquet is reused to reduce duplicate logic and tech debt.
@@ -18,10 +18,12 @@ from aind_behavior_vr_foraging_packaging._provenance import PackagingProvenance
 from aind_behavior_vr_foraging_packaging.models import Site
 from hdmf_zarr import NWBZarrIO
 
-# NWB stores missing values as NaN (e.g. `bool | None` comes back as
-# 0.0 / 1.0 / NaN), so NaN is restored to None for every nullable field
-_NULLABLE_FIELDS = frozenset(
-    name for name, field in Site.model_fields.items() if type(None) in t.get_args(field.annotation)
+# NWB can't store None, so `bool | None` comes back as 0.0 / 1.0 / NaN.
+# NaN isn't a valid bool, so it's restored to None before validating.
+_NULLABLE_BOOL_FIELDS = frozenset(
+    name
+    for name, field in Site.model_fields.items()
+    if set(t.get_args(field.annotation)) == {bool, type(None)}
 )
 
 
@@ -38,7 +40,7 @@ def _restore_row(row: dict) -> dict:
     dict
         The row validated and dumped by ``Site``.
     """
-    for name in _NULLABLE_FIELDS:
+    for name in _NULLABLE_BOOL_FIELDS:
         value = row[name]
         if isinstance(value, float) and math.isnan(value):
             row[name] = None
@@ -63,7 +65,8 @@ def read_sites(nwb_path: Path) -> pd.DataFrame:
     """
     with NWBZarrIO(nwb_path.as_posix(), mode="r") as io:
         nwb = io.read()
-        trials = nwb.trials.to_dataframe()
+        # nwb.trials is None when the session has no sites (nwbize adds no trials)
+        trials = nwb.trials.to_dataframe() if nwb.trials is not None else pd.DataFrame()
         was_generated_by = dict(nwb.was_generated_by[:].tolist())
     rows = [_restore_row(row) for row in trials.to_dict(orient="records")]
     sites = pd.DataFrame(rows, columns=list(Site.model_fields))
